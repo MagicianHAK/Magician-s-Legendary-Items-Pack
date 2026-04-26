@@ -1,0 +1,15 @@
+{
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.legs": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "earthen_belt": true
+          }
+        }
+      }
+    }
+  }
+}

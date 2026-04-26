@@ -1,0 +1,7 @@
+{
+    "pack": {
+        "description": ["",{"color":"gold","bold":true,"text":"Custom Legendary Items!\n"},{"color":"yellow","text":"By: "},{"color":"dark_red","text":"MagicianHAK"}],
+        "min_format": [94, 1],
+        "max_format": [94, 1]
+    }
+}

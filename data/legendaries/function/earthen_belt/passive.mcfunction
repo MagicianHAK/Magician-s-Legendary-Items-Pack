@@ -1,0 +1,1 @@
+execute as @a[predicate=legendaries:wearing_earthen_belt] at @s if block ~ ~-1 ~ #dirt run effect give @s health_boost 2 0 true
