@@ -25,9 +25,16 @@ The datapack is balanced around this gear:
 This datapack is made for Minecraft 1.21.11
 
 ## Installation
-1. Download the datapack ZIP
-2. Place it into your world's `datapacks` folder
-3. Run `/reload` in-game
+1. Download both the datapack and resource pack.
+
+2. Install the datapack:
+Place the datapack ZIP into your world's `datapacks` folder.
+
+3. Install the resource pack:
+Place the resource pack ZIP into your Minecraft `resourcepacks` folder and enable it in-game.
+
+4. Run `/reload` in-game.
 
 ## Dependencies
-This datapack requires a custom resource pack to work
+This datapack requires the included resource pack to function correctly.
+Both the datapack and resource pack must be installed.
