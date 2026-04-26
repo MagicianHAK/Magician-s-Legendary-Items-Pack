@@ -1,0 +1,17 @@
+{
+  "criteria": {
+    "using_item": {
+      "trigger": "minecraft:using_item",
+      "conditions": {
+        "item": {
+          "predicates": {
+            "minecraft:custom_data": "{frenzy:1b}"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "legendaries:frenzy/ability"
+  }
+}

@@ -1,0 +1,7 @@
+function legendaries:legendary_glowing
+function legendaries:speed_boots/tick
+function legendaries:ender_cloak/tick
+function legendaries:ancient_helm/tick
+function legendaries:frenzy/tick
+function legendaries:tidal_blade/tick
+function legendaries:earthen_belt/tick

@@ -1,0 +1,15 @@
+{
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.chest": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "ender_cloak": true
+          }
+        }
+      }
+    }
+  }
+}

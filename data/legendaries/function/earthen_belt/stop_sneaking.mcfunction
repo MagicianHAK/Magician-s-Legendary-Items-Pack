@@ -1,0 +1,2 @@
+execute as @a[predicate=legendaries:not_sneaking] if score @s earthen_belt_sneak_time matches 1.. run attribute @s knockback_resistance modifier remove legendaries:earthen_belt_kb_res
+execute as @a[predicate=legendaries:not_sneaking] if score @s earthen_belt_sneak_time matches 1.. run scoreboard players set @s earthen_belt_sneak_time 0

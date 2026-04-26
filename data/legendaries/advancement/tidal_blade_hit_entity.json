@@ -1,0 +1,15 @@
+{
+  "criteria": {
+    "player_hurt_entity": {
+      "trigger": "minecraft:player_hurt_entity",
+      "conditions": {
+        "entity": {
+          "type": "player"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "legendaries:tidal_blade/on_hit"
+  }
+}

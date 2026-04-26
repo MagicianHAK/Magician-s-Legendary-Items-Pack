@@ -1,0 +1,2 @@
+execute as @a[tag=tidal_blade_combo] run scoreboard players remove @s tidal_blade_combo_timer 1
+execute as @a[tag=tidal_blade_combo] if score @s tidal_blade_combo_timer matches 0 run function legendaries:tidal_blade/reset_combo

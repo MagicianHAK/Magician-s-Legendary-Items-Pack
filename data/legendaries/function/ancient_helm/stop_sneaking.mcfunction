@@ -1,0 +1,2 @@
+execute as @a[predicate=legendaries:wearing_ancient_helm, predicate=legendaries:not_sneaking] if score @s ancient_helm_cooldown matches 0 run return run function legendaries:ancient_helm/ability
+execute as @a[predicate=legendaries:not_sneaking] run scoreboard players set @s ancient_helm_sneak_time 0

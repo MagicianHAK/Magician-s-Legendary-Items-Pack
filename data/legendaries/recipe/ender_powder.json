@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      "minecraft:ender_pearl"
+    ]
+  ],
+  "result": {
+    "id": "minecraft:netherite_pickaxe",
+    "components": {
+      "minecraft:consumable": {
+        "consume_seconds": 0.01,
+        "animation": "none",
+        "sound": "entity.player.teleport",
+        "has_consume_particles": false
+      },
+      "minecraft:item_model": "legendary_items:ender_powder",
+      "minecraft:custom_name": {
+        "italic": false,
+        "text": "Ender Powder"
+      },
+      "minecraft:use_cooldown": {
+        "seconds": 30,
+        "cooldown_group": "legendaries:ender_powder"
+      },
+      "minecraft:custom_data": {
+        "ender_powder": true
+      },
+      "minecraft:max_stack_size": 64,
+      "!minecraft:tool": {},
+      "!minecraft:attribute_modifiers": {},
+      "!minecraft:max_damage": {},
+      "!minecraft:damage_resistant": {}
+    },
+    "count": 2
+  }
+}
