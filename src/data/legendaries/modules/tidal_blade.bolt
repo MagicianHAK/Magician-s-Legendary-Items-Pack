@@ -1,0 +1,232 @@
+# Settings
+hits_for_buff = 4
+hits_for_stun = 20
+stun_duration = 5
+buff_combo_timer_duration = 2
+stun_combo_timer_duration = 5
+
+# Some timings converted to ticks
+stun_combo_timer_duration_ticks = stun_combo_timer_duration * 20
+buff_combo_timer_duration_ticks = buff_combo_timer_duration * 20
+stun_duration_ticks = stun_duration * 20
+
+advancement legendaries:tidal_blade_hit_entity {
+  "criteria": {
+    "player_hurt_entity": {
+      "trigger": "minecraft:player_hurt_entity",
+      "conditions": {
+        "entity": {
+          "type": "player"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "legendaries:tidal_blade/on_hit"
+  }
+}
+
+advancement legendaries:tidal_blade_player_take_damage {
+  "criteria": {
+    "entity_hurt_player": {
+      "trigger": "minecraft:entity_hurt_player"
+    }
+  },
+  "rewards": {
+    "function": "legendaries:tidal_blade/reset_combo"
+  }
+}
+
+predicate legendaries:has_tidal_blade_in_hand {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "weapon.*": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "tidal_blade": true
+          }
+        }
+      }
+    }
+  }
+}
+
+predicate legendaries:has_tidal_blade_in_hotbar {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "hotbar.*": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "tidal_blade": true
+          }
+        }
+      }
+    }
+  }
+}
+
+predicate legendaries:has_regen {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "effects": {
+      "minecraft:regeneration": {}
+    }
+  }
+}
+
+function legendaries:tidal_blade/give:
+    # Gives Tidal Blade to @s
+
+    give @s netherite_sword[custom_data={legendary:1b, tidal_blade:1b},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5},custom_name={"bold":true,"color":"blue","italic":false,"text":"Tidal Blade"},item_model="legendary_items:tidal_blade",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent dolphins grace, regen 2 and 2 extra"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"hearts."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Relentless Current:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"For every 4 hits you land gain a random buff. Resets when"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"taking damage or not landing enough hits."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Crippling Tide:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"For every 20 hits you land stun all nearby players. Resets"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"when not landing enough hits."}]]] 1
+
+
+function legendaries:tidal_blade/setup:
+    # Runs all setup for Tidal Blade
+
+    # Sets up all tidal blade related score boards
+    scoreboard objectives add tidal_blade_combo dummy
+    scoreboard objectives add tidal_blade_combo_buff dummy
+    scoreboard objectives add tidal_blade_combo_stun dummy
+    scoreboard objectives add tidal_blade_combo_buff_timer dummy
+    scoreboard objectives add tidal_blade_combo_stun_timer dummy
+    scoreboard objectives add tidal_blade_buff dummy
+    scoreboard players set $tidalBladeHitsForBuff settings hits_for_buff
+
+
+function legendaries:tidal_blade/tick:
+    # Runs all tidal blade related functions and effects that need to run every tick
+
+    # Reduces all players combo timer for buff by 1 and if the timer hits 0 reset combo
+    execute as @a[tag=tidal_blade_combo]:
+        scoreboard players remove @s tidal_blade_combo_buff_timer 1
+        if score @s tidal_blade_combo_buff_timer matches 0 run function legendaries:tidal_blade/reset_combo
+
+    # Reduces all players combo timer for stun by 1 and if the timer hits 0 reset combo
+    execute as @a[tag=tidal_blade_combo_stun]:
+        scoreboard players remove @s tidal_blade_combo_stun_timer 1
+        if score @s tidal_blade_combo_stun_timer matches 0 run function legendaries:tidal_blade/reset_combo_ability
+
+    # Applies effects to all players holding Tidal Blade
+    execute as @a[predicate=legendaries:has_tidal_blade_in_hotbar] run function legendaries:tidal_blade/apply_effects
+    execute as @a[predicate=legendaries:has_tidal_blade_in_hand] run function legendaries:tidal_blade/apply_effects
+
+    # Clear hp boost from players not holding Tidal Blade
+    execute as @a[predicate=!legendaries:has_tidal_blade_in_hotbar, predicate=!legendaries:has_tidal_blade_in_hand] run attribute @s max_health modifier remove legendaries:tidal_blade_hp_boost
+
+    # Particles on stunned players
+    execute as @a[tag=tidal_blade_stuned] at @s run particle dripping_water ~ ~1 ~ 0.3 0.6 0.3 0 2
+
+
+function legendaries:tidal_blade/apply_effects:
+    # Apply the permanent effets from Tidal Blade
+
+    execute unless predicate legendaries:has_regen run effect give @s regeneration 2 1 true
+    effect give @s dolphins_grace 1 0 true
+    attribute @s max_health modifier add legendaries:tidal_blade_hp_boost 4 add_value
+
+function legendaries:tidal_blade/reset_combo:
+    # Resets the combo for buff
+
+    advancement revoke @s only legendaries:tidal_blade_player_take_damage
+    tag @s remove tidal_blade_combo
+    scoreboard players set @s tidal_blade_combo 0
+
+
+function legendaries:tidal_blade/reset_combo_ability:
+    # Resets the combo for stun
+
+    tag @s remove tidal_blade_combo_stun
+    scoreboard players set @s tidal_blade_combo_stun 0
+
+
+function legendaries:tidal_blade/clear_stun:
+    # Clears the Tidal Blade stun from all players
+
+    execute as @a[tag=tidal_blade_stuned] run attribute @s jump_strength modifier remove legendaries:tidal_blade_stun_jump
+    execute as @a[tag=tidal_blade_stuned] run attribute @s knockback_resistance modifier remove legendaries:tidal_blade_stun_kb
+    execute as @a[tag=tidal_blade_stuned] run tag @s remove tidal_blade_stuned
+
+
+function legendaries:tidal_blade/on_hit:
+    # Handles all on hit logic for Tidal Blade
+
+    # Remove trigger advancement from self
+    advancement revoke @s only legendaries:tidal_blade_hit_entity
+
+    # If holding Tidal Blade
+    execute if predicate legendaries:has_tidal_blade_in_hand:
+
+        # Increase combo counter by 1 and reset combo timer for buff
+        tag @s add tidal_blade_combo
+        scoreboard players set @s tidal_blade_combo_buff_timer buff_combo_timer_duration_ticks
+        scoreboard players add @s tidal_blade_combo 1
+
+        # Increase combo counter by 1 and reset combo timer for stun
+        tag @s add tidal_blade_combo_stun
+        scoreboard players set @s tidal_blade_combo_stun_timer stun_combo_timer_duration_ticks
+        scoreboard players add @s tidal_blade_combo_stun 1
+
+        # Checks if buff for combo should be applied
+        scoreboard players operation @s tidal_blade_combo_buff = @s tidal_blade_combo
+        scoreboard players operation @s tidal_blade_combo_buff %= $tidalBladeHitsForBuff settings
+        execute if score @s tidal_blade_combo_buff matches 0:
+
+            # Generate and store a random number from 1 to 4
+            execute store result score @s tidal_blade_buff run random value 1..4
+
+            # Play sound effect
+            playsound minecraft:block.respawn_anchor.charge master @a ~ ~ ~ 1 2
+
+            # If 1 give strength
+            execute if score @s tidal_blade_buff matches 1 run return:
+                effect give @s strength 10 1 true
+                tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"gold",bold:true,text:"strength!"}]
+            
+            # If 2 give speed
+            execute if score @s tidal_blade_buff matches 2 run return:
+                effect give @s speed 10 2 true
+                tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"white",bold:true,text:"speed!"}]
+
+            # If 3 give health
+            execute if score @s tidal_blade_buff matches 3 run return:
+                effect give @s instant_health 1 1 true
+                tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"red",bold:true,text:"instant health!"}]
+
+            # If 2 give haste
+            execute if score @s tidal_blade_buff matches 4 run return:
+                effect give @s haste 10 2 true
+                tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"yellow",bold:true,text:"haste!"}]
+
+        # Checks if stun for combo should be applied
+        execute if score @s tidal_blade_combo_stun matches hits_for_stun:
+
+            # Tags user so they are immune to stun
+            tag @s add tidal_blade_ability
+
+            # Stuns all entities in range
+            execute as @e[distance=..5,tag=!tidal_blade_ability] at @s:
+                effect give @s slowness stun_duration 6 true
+                effect give @s weakness stun_duration 4 true
+                effect give @s mining_fatigue stun_duration 4 true
+                attribute @s jump_strength modifier add legendaries:tidal_blade_stun_jump -10 add_value
+                attribute @s knockback_resistance modifier add legendaries:tidal_blade_stun_kb 1 add_value
+                tag @s add tidal_blade_stuned
+                schedule function legendaries:tidal_blade/clear_stun stun_duration_ticks
+
+            # Cosmetic effects
+            summon area_effect_cloud ~ ~1 ~ {custom_particle:{type:"falling_water"},Radius:6f,RadiusPerTick:-0.2f}
+            playsound minecraft:block.respawn_anchor.deplete master @a ~ ~ ~ 2 0
+            playsound minecraft:item.totem.use master @a ~ ~ ~ 2 2
+            tellraw @s ["",{color:"blue",bold:true,text:"Cripling Tide "},{color:"aqua",text:"is active!"}]
+
+            # Sets combo counter to 0 and removes immunity tag
+            scoreboard players set @s tidal_blade_combo_stun 0
+            tag @s remove tidal_blade_ability
+
+
+

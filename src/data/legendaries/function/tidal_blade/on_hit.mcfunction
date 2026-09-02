@@ -1,2 +1,0 @@
-advancement revoke @s only legendaries:tidal_blade_hit_entity
-execute if predicate legendaries:has_tidal_blade_in_hand run function legendaries:tidal_blade/increase_combo

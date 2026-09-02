@@ -1,1 +1,0 @@
-execute if score @s tidal_blade_combo_ability matches 20 run function legendaries:tidal_blade/ability
