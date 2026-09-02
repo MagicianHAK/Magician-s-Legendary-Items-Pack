@@ -69,20 +69,10 @@ predicate legendaries:has_tidal_blade_in_hotbar {
   }
 }
 
-predicate legendaries:has_regen {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "effects": {
-      "minecraft:regeneration": {}
-    }
-  }
-}
-
 function legendaries:tidal_blade/give:
     # Gives Tidal Blade to @s
 
-    give @s netherite_sword[custom_data={legendary:1b, tidal_blade:1b},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5},custom_name={"bold":true,"color":"blue","italic":false,"text":"Tidal Blade"},item_model="legendary_items:tidal_blade",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent dolphins grace, regen 2 and 2 extra"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"hearts."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Relentless Current:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"For every 4 hits you land gain a random buff. Resets when"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"taking damage or not landing enough hits."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Crippling Tide:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"For every 20 hits you land stun all nearby players. Resets"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"when not landing enough hits."}]]] 1
+    give @s netherite_sword[custom_data={legendary:1b, tidal_blade:1b},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5},custom_name={"bold":true,"color":"blue","italic":false,"text":"Tidal Blade"},item_model="legendary_items:tidal_blade",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent dolphins grace, regen 2 and 2 extra"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"hearts."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Relentless Current:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_buff} hits you land gain a random buff. Resets when"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"taking damage or not landing enough hits."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Crippling Tide:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_stun} hits you land stun all nearby players. Resets"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"when not landing enough hits."}]]] 1
 
 
 function legendaries:tidal_blade/setup:

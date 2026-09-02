@@ -1,1 +1,0 @@
-execute as @a[predicate=legendaries:wearing_ancient_helm] run effect give @s resistance 1 0 true

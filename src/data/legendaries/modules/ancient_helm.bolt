@@ -1,0 +1,167 @@
+# Settings
+cooldown_seconds = 60 # Seconds
+raycast_range_blocks = 100 # Blocks
+min_sneaking_time_seconds = 5 # Seconds
+glowing_range_scaling = 3 # (seconds crouched * this = range in blocks)
+max_glowing_range = 100 # Blocks
+ability_damage = 7 # Sonic Boom Damage
+ability_debuff_duration = 8 # Seconds
+weakness_level = 0
+slowness_level = 1
+mining_fatigue_level = 1
+
+# Setting converted for use in code
+cooldown = cooldown_seconds * 20
+raycast_range = raycast_range_blocks * 10
+min_sneaking_time = min_sneaking_time_seconds * 20
+
+
+predicate legendaries:wearing_ancient_helm {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.head": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "ancient_helm": true
+          }
+        }
+      }
+    }
+  }
+}
+
+function legendaries:ancient_helm/give:
+    # Gives @s The Ancient Helm
+
+    give @s netherite_pickaxe[custom_data={legendary:1b, ancient_helm:1b},custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Ancient Helm"},enchantments={"protection":4,"aqua_affinity":1,"respiration":3},unbreakable={},attribute_modifiers=[{id:"285b33c6-7a30-4e83-9cb7-a2d500357328",type:"max_health",amount:4,operation:"add_value",slot:"head"},{id:"ff811d0c-33d5-4383-9b9e-8e16f6bad3a1",type:"armor",amount:3,operation:"add_value",slot:"head"},{id:"3fde18fa-5d5f-45c3-ae47-075a74c4701c",type:"armor_toughness",amount:3,operation:"add_value",slot:"head"},{id:"8d2d04fa-9695-4387-a3cd-0e7a44bf5f40",type:"knockback_resistance",amount:0.1,operation:"add_value",slot:"head"}],lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent resistance and 2 extra hearts"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"while wearing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Eldritch Shriek: "},{color:"dark_gray",text:f"(Cooldown: {cooldown_seconds} seconds)"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"While holding sneak charge up a powerful"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"shriek that applies debuffs but become"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"blind. The longer you charge for the"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"farther away you can sense entitys from."}]],item_model="legendary_items:ancient_helm",equippable={slot:"head",equip_sound:"item.armor.equip_netherite"},!tool] 1
+
+
+function legendaries:ancient_helm/setup:
+    # Runs all setup for Ancient Helm
+
+    # Sets up all Ancient Helm scoreboards
+    scoreboard objectives add ancient_helm_raycast dummy
+    scoreboard objectives add ancient_helm_sneak_time minecraft.custom:minecraft.sneak_time
+    scoreboard objectives add ancient_helm_range dummy
+    scoreboard objectives add ancient_helm_damage dummy
+    scoreboard objectives add ancient_helm_cooldown dummy
+
+    # Max range for ancient helm glowing
+    scoreboard players set $ancientHelmMaxGlowingRange settings max_glowing_range
+
+    # Used to get the distance the ancient helm should give glowing
+    scoreboard players set $ancientHelmGlowingScale settings glowing_range_scaling
+
+    # Max distance ancient helm ability works from (set later)
+    scoreboard players add $ancientHelmMaxRaycast ancient_helm_raycast 0
+
+
+function legendaries:ancient_helm/tick:
+    # Runs all ancient helm related functions and effects that need to run every tick
+
+    # Handles logic when a player stops sneaking
+    execute:
+
+        # If a player wearing helm and not on cooldown stops sneaking try ability
+        execute as @a[predicate=legendaries:wearing_ancient_helm, predicate=legendaries:not_sneaking] if score @s ancient_helm_cooldown matches 0:
+
+            # If player has been sneaking for enough time trigger ability raycast
+            execute if score @s ancient_helm_sneak_time matches f"{min_sneaking_time}.." at @s:
+
+                # Give raycaster immunity tag and put them on cooldown
+                tag @s add ancient_helm_raycaster
+                tag @s add ancient_helm_on_cooldown
+                scoreboard players set @s ancient_helm_cooldown cooldown
+
+                # Sets the max distance the raycast can go
+                scoreboard players set $ancientHelmMaxRaycast ancient_helm_raycast raycast_range
+
+                # Start the raycast
+                execute anchored eyes positioned ^ ^ ^.1 run function legendaries:ancient_helm/raycast
+
+                # Remove tags
+                tag @s remove ancient_helm_raycaster
+                tag @e[tag=damaged] remove damaged
+        
+        # Reset players sneak time
+        execute as @a[predicate=legendaries:not_sneaking] run scoreboard players set @s ancient_helm_sneak_time 0
+
+    # Handles the cooldown for helm
+    execute as @a[tag=ancient_helm_on_cooldown]:
+
+        # Reduce all players cooldown by 1 tick
+        scoreboard players remove @s ancient_helm_cooldown 1
+
+        # If cooldown hits 0 tell player and remove cooldown tag
+        if score @s ancient_helm_cooldown matches 0:
+            tellraw @s ["",{color:"dark_aqua",bold:true,text:"Eldritch Shriek"},{color:"aqua",text:" has recharged!"}]
+            tag @s remove ancient_helm_on_cooldown
+    
+    # Applies res to all players wearing helm
+    execute as @a[predicate=legendaries:wearing_ancient_helm] run effect give @s resistance 1 0 true
+
+    # Adds all players wearing helm to cooldown scoreboard if they were not already
+    scoreboard players add @a[predicate=legendaries:wearing_ancient_helm] ancient_helm_cooldown 0
+
+    # Handles all sneaking logic for helm
+    # Checks if any player wearing helm has been sneaking long enough to start charging the ability
+    execute as @a[predicate=legendaries:sneaking, predicate=legendaries:wearing_ancient_helm] if score @s ancient_helm_sneak_time matches 15.. at @s:
+
+        # Exit function if helm on cooldown
+        execute if score @s ancient_helm_cooldown matches 1.. run return fail
+
+        # Cosmetic effects and blindness
+        effect give @s blindness 1 0 true
+        playsound entity.warden.angry master @a ~ ~ ~
+        particle minecraft:sculk_charge_pop ~ ~1 ~ .5 .5 .5 .05 10
+
+        # Tell player ability is ready
+        execute if score @s ancient_helm_sneak_time matches min_sneaking_time run tellraw @s ["",{color:"dark_aqua",bold:true,text:"Eldritch Shriek"},{color:"aqua",text:" is ready!"}]
+
+        # Calculates glowing rage and stores it
+        scoreboard players operation @s ancient_helm_range = @s ancient_helm_sneak_time
+        scoreboard players operation @s ancient_helm_range /= $ticksPerSecond settings
+        scoreboard players operation @s ancient_helm_range *= $ancientHelmGlowingScale settings
+        scoreboard players operation @s ancient_helm_range < $ancientHelmMaxGlowingRange settings
+        execute store result storage legendaries:glow_range range int 1 run scoreboard players get @s ancient_helm_range
+
+        # Calls the glowing macro function with the stored glowing range
+        function legendaries:ancient_helm/glowing with storage legendaries:glow_range
+
+
+function legendaries:ancient_helm/raycast:
+    # One step of the raycast
+
+    # Reduce remaning distance by 1
+    scoreboard players remove $ancientHelmMaxRaycast ancient_helm_raycast 1
+
+    # Cosmetic effects
+    particle sonic_boom ~ ~ ~ .5 .5 .5 0 1 force
+    playsound entity.warden.death master @a ~ ~ ~
+
+    # Check for collision with entitys and deal damage to them
+    execute positioned ~-1.5 ~-1.5 ~-1.5 as @e[dx=3, dy=3, dz=3, tag=!ancient_helm_raycaster, tag=!damaged, type=!item]:
+
+        # Deal damage and apply effects
+        damage @s ability_damage sonic_boom
+        effect give @s blindness ability_debuff_duration 0 true
+        effect give @s weakness ability_debuff_duration weakness_level true
+        effect give @s slowness ability_debuff_duration slowness_level true
+        effect give @s glowing ability_debuff_duration 0 true
+        effect give @s mining_fatigue ability_debuff_duration mining_fatigue_level true
+        effect give @s slow_falling ability_debuff_duration 0 true
+
+        # Tag to prevent double hits
+        tag @s add damaged
+
+    # Recursive call of self if remaning distance > 0
+    execute if score $ancientHelmMaxRaycast ancient_helm_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ancient_helm/raycast
+
+
+function legendaries:ancient_helm/glowing:
+    # Macro function that applies glowing to all entities in a provided range
+
+    $execute as @e[distance=..$(range)] run effect give @s glowing 1 0 true
+    data remove storage legendaries:glow_range range

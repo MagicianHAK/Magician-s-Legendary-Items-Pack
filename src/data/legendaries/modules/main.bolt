@@ -1,8 +1,102 @@
 import legendaries:tidal_blade as tidal_blade
+import legendaries:ancient_helm as ancient_helm
+
+# Genral predicates
+predicate legendaries:has_legendary_armor {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.*": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "legendary": true
+          }
+        }
+      }
+    }
+  }
+}
+predicate legendaries:has_legendary_inventory {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "container.*": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "legendary": true
+          }
+        }
+      }
+    }
+  }
+}
+predicate legendaries:has_legendary_offhand {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "weapon.offhand": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "legendary": true
+          }
+        }
+      }
+    }
+  }
+}
+predicate legendaries:has_regen {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "effects": {
+      "minecraft:regeneration": {}
+    }
+  }
+}
+predicate legendaries:in_air {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "flags": {
+      "is_on_ground": false
+    }
+  }
+}
+predicate legendaries:not_sneaking {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "flags": {
+      "is_sneaking": false
+    }
+  }
+}
+predicate legendaries:on_ground {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "flags": {
+      "is_on_ground": true
+    }
+  }
+}
+predicate legendaries:sneaking {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "flags": {
+      "is_sneaking": true
+    }
+  }
+}
 
 function legendaries:load:
     # Runs setup functions for all legendaries
     function legendaries:tidal_blade/setup
+    function legendaries:ancient_helm/setup
 
     # Set up scoreboards
     scoreboard objectives add fall_distance dummy
@@ -11,27 +105,13 @@ function legendaries:load:
     scoreboard objectives add frenzy_cooldown_seconds dummy
     scoreboard objectives add frenzy_cooldown_seconds_old dummy
     scoreboard objectives add ender_cloak_raycast dummy
-    scoreboard objectives add ancient_helm_raycast dummy
-    scoreboard objectives add ancient_helm_sneak_time minecraft.custom:minecraft.sneak_time
-    scoreboard objectives add ancient_helm_range dummy
-    scoreboard objectives add ancient_helm_damage dummy
-    scoreboard objectives add ancient_helm_cooldown dummy
     scoreboard objectives add earthen_belt_sneak_time minecraft.custom:minecraft.sneak_time
 
     # For scaling cooldowns correctly
     scoreboard players set $ticksPerSecond settings 20
 
-    # Max range for ancient helm glowing
-    scoreboard players set $ancientHelmMaxGlowingRange settings 100
-
-    # Used to get the distance the ancient helm should give glowing (seconds crouched * this = range)
-    scoreboard players set $ancientHelmGlowingScale settings 3
-
     # Max distance ender cloak ability works from (set in raycast function)
     scoreboard players add $enderCloakMaxRaycast ender_cloak_raycast 0
-
-    # Max distance ancient helm ability works from (set later)
-    scoreboard players add $ancientHelmMaxRaycast ancient_helm_raycast 0
 
     # Damage Mult is divided by scale so 25 would be 2.5 damage per block fallen
     scoreboard players set $speedBootsDamageMult settings 25
