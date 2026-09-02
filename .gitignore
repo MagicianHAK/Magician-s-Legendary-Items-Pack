@@ -1,0 +1,11 @@
+# Python Virtual Environment
+.venv/
+
+# VS Code Config
+.vscode/
+
+# Beet Cache
+.beet_cache
+
+# Built Packs
+build/

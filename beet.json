@@ -1,0 +1,32 @@
+{
+    "name": "Magician's Legendary Items",
+    "author": "MagicianHAK",
+    "require": [
+        "bolt"
+    ],
+
+    "data_pack": {
+        "name": "Magicians-Legendary-Items-DP",
+        "description": ["",{"color":"gold","bold":true,"text":"Custom Legendary Items!\n"},{"color":"yellow","text":"By: "},{"color":"dark_red","text":"MagicianHAK"}],
+        "min_format": [94, 1],
+        "max_format": [94, 1],
+        "load": ["src"]
+    },
+
+    "resource_pack": {
+        "name": "Magicians-Legendary-Items-RP",
+        "description": ["",{"color":"gold","text":"","extra":[{"bold":true,"text":"Legendary Items"}," Pack"]},"\n",{"color":"yellow","text":"By: "},{"color":"dark_red","text":"MagicianHAK"},{"color":"yellow","text":" & "},{"color":"dark_green","text":"Alxroar"}],
+        "min_format": 75,
+        "max_format": 75,
+        "load": ["src"]
+    },
+
+    "pipeline": ["mecha"],
+    "output": "build",
+
+    "meta": {
+        "bolt": {
+            "entrypoint": ["legendaries:main"]
+        }
+    }
+}
