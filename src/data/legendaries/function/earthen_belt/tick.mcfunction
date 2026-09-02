@@ -1,3 +1,0 @@
-function legendaries:earthen_belt/stop_sneaking
-function legendaries:earthen_belt/sneaking
-function legendaries:earthen_belt/passive

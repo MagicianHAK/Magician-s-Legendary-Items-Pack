@@ -1,0 +1,63 @@
+# Settings
+min_sneaking_time_seconds = 1 # Second
+resistance_level = 1
+slowness_level = 1
+dirt_health_boost_level = 0
+kb_resistance = 0.4
+
+# Setting converted for use in code
+min_sneaking_time = min_sneaking_time_seconds * 20
+resistance_level_text = resistance_level + 1
+dirt_health_boost_text = (dirt_health_boost_level + 1) * 2
+
+predicate legendaries:wearing_earthen_belt {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.legs": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "earthen_belt": true
+          }
+        }
+      }
+    }
+  }
+}
+
+function legendaries:earthen_belt/give:
+    # Gives @s Earthen Belt
+
+    give @s netherite_leggings[custom_data={legendary:1b, earthen_belt:1b},custom_name={"bold":true,"color":"#6e300b","italic":false,"text":"Earthen Belt"},unbreakable={},attribute_modifiers=[{id:"1eaaeac1-a19d-4599-8ee9-22cdc5a06b1b",type:"armor",amount:6,operation:"add_value",slot:"legs"},{id:"38482d63-c9ca-46d3-bce2-a62555f5d7cb",type:"armor_toughness",amount:3,operation:"add_value",slot:"legs"},{id:"9829097e-c601-467d-8dcf-c72d5e561c72",type:"knockback_resistance",amount:0.1,operation:"add_value",slot:"legs"},{id:"065070b2-5586-4e3c-83bb-f68064ad5760",type:"max_health",amount:8,operation:"add_value",slot:"legs"}],enchantments={"protection":4,"swift_sneak":3},equippable={slot:"legs",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},minecraft:item_model="legendary_items:earthen_belt",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"#eb9b6d",text:"Having a legendary like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"#eb9b6d",text:"Grants permanent 4 extra hearts while wearing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"#6E300B",bold:true,text:"Rooted:"}],[{italic:false,color:"white",text:""},{color:"#eb9b6d",text:f"While standing on dirt blocks gain {dirt_health_boost_text} extra hearts."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"#6e300b",bold:true,text:"Earth Stance: "}],[{italic:false,color:"white",text:""},{color:"#eb9b6d",text:f"While sneaking gain resistance {resistance_level_text} and take reduced"}],[{italic:false,color:"white",text:""},{color:"#eb9b6d",text:"knockback."}]]] 1
+function legendaries:earthen_belt/setup:
+    # Runs all setup for Earthen Belt
+
+    # Sets up all Earthen Belt scoreboards
+    scoreboard objectives add earthen_belt_sneak_time minecraft.custom:minecraft.sneak_time
+
+
+function legendaries:earthen_belt/tick:
+    # Runs all Earthen Belt related functions and effects that need to run every tick
+
+    # Handles all logic for when a player stops sneaking
+    execute as @a[predicate=legendaries:not_sneaking] if score @s earthen_belt_sneak_time matches 1..:
+        attribute @s knockback_resistance modifier remove legendaries:earthen_belt_kb_res
+        scoreboard players set @s earthen_belt_sneak_time 0
+
+    # Handles all logic for when a player is sneaking
+    # If a player wearing Earthen Belt has been sneaking for enough time trigger ability
+    execute as @a[predicate=legendaries:sneaking, predicate=legendaries:wearing_earthen_belt] at @s if score @s earthen_belt_sneak_time matches f"{min_sneaking_time}..":
+
+        # Apply effects
+        effect give @s resistance 1 resistance_level true
+        effect give @s slowness 1 slowness_level true
+
+        # Apply KB res
+        attribute @s knockback_resistance modifier add legendaries:earthen_belt_kb_res kb_resistance add_value
+
+        # Particles
+        particle minecraft:block{block_state:packed_mud} ~ ~1 ~ 0.2 0.4 0.2 1 3
+
+    # Give 2 extra hearts to players wearing Earthen Belt on any block tagged with #dirt
+    execute as @a[predicate=legendaries:wearing_earthen_belt] at @s if block ~ ~-1 ~ #dirt run effect give @s health_boost 2 dirt_health_boost_level true

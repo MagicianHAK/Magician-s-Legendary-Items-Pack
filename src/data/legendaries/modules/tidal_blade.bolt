@@ -1,9 +1,9 @@
 # Settings
 hits_for_buff = 4
 hits_for_stun = 20
-stun_duration = 5
-buff_combo_timer_duration = 2
-stun_combo_timer_duration = 5
+stun_duration = 5 # Seconds
+buff_combo_timer_duration = 2 # Seconds
+stun_combo_timer_duration = 5 # Seconds
 
 # Some timings converted to ticks
 stun_combo_timer_duration_ticks = stun_combo_timer_duration * 20

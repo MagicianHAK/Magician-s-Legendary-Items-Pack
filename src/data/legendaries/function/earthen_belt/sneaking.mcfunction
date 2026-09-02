@@ -1,1 +1,0 @@
-execute as @a[predicate=legendaries:sneaking, predicate=legendaries:wearing_earthen_belt] at @s if score @s earthen_belt_sneak_time matches 20.. run function legendaries:earthen_belt/ability
