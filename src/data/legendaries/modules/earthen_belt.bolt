@@ -1,12 +1,11 @@
 # Settings
-min_sneaking_time_seconds = 1 # Second
+min_sneaking_time = 10 # ticks
 resistance_level = 1
 slowness_level = 1
 dirt_health_boost_level = 0
 kb_resistance = 0.4
 
 # Setting converted for use in code
-min_sneaking_time = min_sneaking_time_seconds * 20
 resistance_level_text = resistance_level + 1
 dirt_health_boost_text = (dirt_health_boost_level + 1) * 2
 
@@ -43,6 +42,7 @@ function legendaries:earthen_belt/tick:
     # Handles all logic for when a player stops sneaking
     execute as @a[predicate=legendaries:not_sneaking] if score @s earthen_belt_sneak_time matches 1..:
         attribute @s knockback_resistance modifier remove legendaries:earthen_belt_kb_res
+        attribute @s jump_strength modifier remove legendaries:earthen_belt_jump_disable
         scoreboard players set @s earthen_belt_sneak_time 0
 
     # Handles all logic for when a player is sneaking
@@ -53,8 +53,9 @@ function legendaries:earthen_belt/tick:
         effect give @s resistance 1 resistance_level true
         effect give @s slowness 1 slowness_level true
 
-        # Apply KB res
+        # Apply KB res and disable jumping
         attribute @s knockback_resistance modifier add legendaries:earthen_belt_kb_res kb_resistance add_value
+        attribute @s jump_strength modifier add legendaries:earthen_belt_jump_disable -10 add_value
 
         # Particles
         particle minecraft:block{block_state:packed_mud} ~ ~1 ~ 0.2 0.4 0.2 1 3
