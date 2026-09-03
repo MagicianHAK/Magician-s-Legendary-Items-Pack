@@ -208,7 +208,6 @@ function legendaries:ender_cloak/raycast:
 function legendaries:ender_cloak/clear_damage_boost:
 
     # Clears the Ender Cloak damage boost from all players
-    tellraw @a "Removed Dmg Buff"
     execute as @a[tag=ender_cloak_damage_boost] run function legendaries:ender_cloak/clear_damage_boost_self
 
 
