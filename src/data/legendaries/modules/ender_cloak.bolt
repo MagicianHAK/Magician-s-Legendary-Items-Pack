@@ -1,0 +1,220 @@
+# Settings
+tp_range_blocks = 80 # Blocks
+damage_boost = 2.5
+damage_boost_duration = 4
+
+# Settings converted for use in code
+tp_range = tp_range_blocks * 10
+damage_boost_mult = damage_boost - 1
+damage_boost_duration_ticks = damage_boost_duration * 20
+
+
+advancement legendaries:use_ender_cloak_ability {
+  "criteria": {
+    "consume_item": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "predicates": {
+            "minecraft:custom_data": "{ender_powder:1b}"
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "legendaries:ender_cloak/start_raycast"
+  }
+}
+
+advancement legendaries:ender_cloak_hit_entity {
+  "criteria": {
+    "hit_entity": {
+      "trigger": "minecraft:player_hurt_entity",
+      "conditions": {
+        "damage": {
+          "blocked": false
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "legendaries:ender_cloak/clear_damage_boost_self"
+  }
+}
+
+predicate legendaries:wearing_ender_cloak {
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "slots": {
+      "armor.chest": {
+        "predicates": {
+          "minecraft:custom_data": {
+            "ender_cloak": true
+          }
+        }
+      }
+    }
+  }
+}
+
+recipe legendaries:ender_powder_creative {
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      "minecraft:bedrock"
+    ]
+  ],
+  "result": {
+    "id": "minecraft:netherite_pickaxe",
+    "components": {
+      "minecraft:consumable": {
+        "consume_seconds": 0.01,
+        "animation": "none",
+        "sound": "entity.player.teleport",
+        "has_consume_particles": false
+      },
+      "minecraft:item_model": "legendary_items:ender_powder",
+      "minecraft:custom_name": {
+        "italic": false,
+        "text": "Creative Ender Powder"
+      },
+      "minecraft:use_cooldown": {
+        "seconds": 1,
+        "cooldown_group": "legendaries:ender_powder_creative"
+      },
+      "minecraft:custom_data": {
+        "ender_powder": true
+      },
+      "minecraft:max_stack_size": 64,
+      "!minecraft:tool": {},
+      "!minecraft:attribute_modifiers": {},
+      "!minecraft:max_damage": {},
+      "!minecraft:damage_resistant": {}
+    },
+    "count": 2
+  }
+}
+
+recipe legendaries:ender_powder {
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      "minecraft:ender_pearl"
+    ]
+  ],
+  "result": {
+    "id": "minecraft:netherite_pickaxe",
+    "components": {
+      "minecraft:consumable": {
+        "consume_seconds": 0.01,
+        "animation": "none",
+        "sound": "entity.player.teleport",
+        "has_consume_particles": false
+      },
+      "minecraft:item_model": "legendary_items:ender_powder",
+      "minecraft:custom_name": {
+        "italic": false,
+        "text": "Ender Powder"
+      },
+      "minecraft:use_cooldown": {
+        "seconds": 30,
+        "cooldown_group": "legendaries:ender_powder"
+      },
+      "minecraft:custom_data": {
+        "ender_powder": true
+      },
+      "minecraft:max_stack_size": 64,
+      "!minecraft:tool": {},
+      "!minecraft:attribute_modifiers": {},
+      "!minecraft:max_damage": {},
+      "!minecraft:damage_resistant": {}
+    },
+    "count": 2
+  }
+}
+
+function legendaries:ender_cloak/give:
+    # Gives @s Ender Cloak
+
+    give @s netherite_chestplate[enchantments={"protection":4},unbreakable={},custom_data={legendary:1b, ender_cloak:1b},attribute_modifiers=[{id:"5ece2df2-6d5f-4dd5-9fa0-d3070a184054",type:"armor",amount:8,operation:"add_value",slot:"chest"},{id:"464ca795-cada-4a22-972f-c666fc44b6c9",type:"armor_toughness",amount:3,operation:"add_value",slot:"chest"},{id:"8ee3b020-b2ab-4e2a-bd6a-67cf48fd4d2b",type:"knockback_resistance",amount:.1,operation:"add_value",slot:"chest"},{id:"46922099-2e3d-48d1-86d8-1348fa7f053f",type:"max_health",amount:4,operation:"add_value",slot:"chest"}],custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Ender Cloak"},lore=[" ",{"color":"light_purple","italic":false,"text":"Having a legendary like this one gives permanent glowing."},{"color":"light_purple","italic":false,"text":"Grants permanent strenght and 2 extra hearts while"},{"color":"light_purple","italic":false,"text":"wearing."}," ",[{"bold":true,"color":"dark_purple","italic":false,"text":"Ender Step: "},{"bold":false,"color":"dark_gray","italic":false,"text":"(Cooldown: 30 seconds)"}],{"color":"light_purple","italic":false,"text":"Right click with ender powder to teleport behind the"},{"color":"light_purple","italic":false,"text":f"entity you are looking at. Then deal {damage_boost}x damage on"},{"color":"light_purple","italic":false,"text":"your next attack."}],equippable={slot:"chest",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:ender_cloak"] 1
+
+
+function legendaries:ender_cloak/setup:
+    # Runs all setup for Ender Cloak
+
+    # Sets up all Ender Cloak scoreboards
+    scoreboard objectives add ender_cloak_raycast dummy
+
+    # Max distance Ender Cloak ability works from (set in raycast function)
+    scoreboard players add $enderCloakMaxRaycast ender_cloak_raycast 0
+
+
+function legendaries:ender_cloak/tick:
+    
+    # Applies strength to all players wearing Ender Cloak
+    execute as @a[predicate=legendaries:wearing_ender_cloak] run effect give @s strength 1 0 true
+
+
+function legendaries:ender_cloak/start_raycast:
+
+    # Clear the advancment and only continue if the player is wearing the ender cloak
+    advancement revoke @s only legendaries:use_ender_cloak_ability
+    execute unless predicate legendaries:wearing_ender_cloak run return fail
+
+    # Tag the player raycasting
+    tag @s add ender_cloak_raycaster
+
+    # Max distance of the raycast (number of blocks * 10)
+    scoreboard players set $enderCloakMaxRaycast ender_cloak_raycast tp_range
+
+    # Starts the raycast
+    execute anchored eyes positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+
+    # Cleanup
+    tag @s remove ender_cloak_raycaster
+
+
+function legendaries:ender_cloak/raycast:
+
+    # Removes 1 from the max distance for every .1 blocks traveled
+    scoreboard players remove $enderCloakMaxRaycast ender_cloak_raycast 1
+
+    # Checks if the raycast hit a entity if it did end the raycast and tp the raycaster
+    execute positioned ~-.5 ~-.5 ~-.5 as @e[dx=0, tag=!ender_cloak_raycaster, type=!item] run return:
+
+        # Tps the raycasting player behind the target
+        execute at @s anchored eyes positioned ^ ^ ^-1 run tp @a[tag=ender_cloak_raycaster] ~ ~ ~ facing entity @s
+
+        # Gives raycasting player temp damage buff
+        execute as @a[tag=ender_cloak_raycaster]:
+
+            # Apply damage buff
+            attribute @s attack_damage modifier add legendaries:ender_cloak_damage_boost damage_boost_mult add_multiplied_total
+            tag @s add ender_cloak_damage_boost
+
+            # Schedule clearing the damage buff
+            schedule function legendaries:ender_cloak/clear_damage_boost damage_boost_duration_ticks
+
+            # Cosmetic effects
+            playsound entity.player.teleport master @a ~ ~ ~
+            particle minecraft:dragon_breath ~ ~1 ~ 0.7 0.7 0.7 .05 150
+
+    # Runs the next step of the raycast if it has not hit its limit and has not hit a block
+    execute if block ~ ~ ~ #minecraft:replaceable if score $enderCloakMaxRaycast ender_cloak_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+
+
+function legendaries:ender_cloak/clear_damage_boost:
+
+    # Clears the Ender Cloak damage boost from all players
+    tellraw @a "Removed Dmg Buff"
+    execute as @a[tag=ender_cloak_damage_boost] run function legendaries:ender_cloak/clear_damage_boost_self
+
+
+function legendaries:ender_cloak/clear_damage_boost_self:
+
+    # Clears the Ender Cloak damage boost from @s
+    advancement revoke @s only legendaries:ender_cloak_hit_entity
+    attribute @s attack_damage modifier remove legendaries:ender_cloak_damage_boost
+    tag @s remove ender_cloak_damage_boost

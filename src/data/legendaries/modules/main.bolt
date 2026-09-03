@@ -1,6 +1,7 @@
 import legendaries:tidal_blade as tidal_blade
 import legendaries:ancient_helm as ancient_helm
 import legendaries:earthen_belt as earthen_belt
+import legendaries:ender_cloak as ender_cloak
 
 # Genral predicates
 predicate legendaries:has_legendary_armor {
@@ -99,6 +100,7 @@ function legendaries:load:
     function legendaries:tidal_blade/setup
     function legendaries:ancient_helm/setup
     function legendaries:earthen_belt/setup
+    function legendaries:ender_cloak/setup
 
     # Set up scoreboards
     scoreboard objectives add fall_distance dummy
@@ -106,13 +108,9 @@ function legendaries:load:
     scoreboard objectives add frenzy_cooldown dummy
     scoreboard objectives add frenzy_cooldown_seconds dummy
     scoreboard objectives add frenzy_cooldown_seconds_old dummy
-    scoreboard objectives add ender_cloak_raycast dummy
 
     # For scaling cooldowns correctly
     scoreboard players set $ticksPerSecond settings 20
-
-    # Max distance ender cloak ability works from (set in raycast function)
-    scoreboard players add $enderCloakMaxRaycast ender_cloak_raycast 0
 
     # Damage Mult is divided by scale so 25 would be 2.5 damage per block fallen
     scoreboard players set $speedBootsDamageMult settings 25
