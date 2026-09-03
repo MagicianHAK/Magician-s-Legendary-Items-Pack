@@ -15,6 +15,9 @@ advancement legendaries:tidal_blade_hit_entity {
     "player_hurt_entity": {
       "trigger": "minecraft:player_hurt_entity",
       "conditions": {
+        "damage": {
+          "blocked": false
+        },
         "entity": {
           "type": "player"
         }
@@ -29,7 +32,12 @@ advancement legendaries:tidal_blade_hit_entity {
 advancement legendaries:tidal_blade_player_take_damage {
   "criteria": {
     "entity_hurt_player": {
-      "trigger": "minecraft:entity_hurt_player"
+      "trigger": "minecraft:entity_hurt_player",
+      "conditions": {
+        "damage": {
+          "blocked": false
+        }
+      }
     }
   },
   "rewards": {
@@ -137,9 +145,11 @@ function legendaries:tidal_blade/reset_combo_ability:
 function legendaries:tidal_blade/clear_stun:
     # Clears the Tidal Blade stun from all players
 
-    execute as @a[tag=tidal_blade_stuned] run attribute @s jump_strength modifier remove legendaries:tidal_blade_stun_jump
-    execute as @a[tag=tidal_blade_stuned] run attribute @s knockback_resistance modifier remove legendaries:tidal_blade_stun_kb
-    execute as @a[tag=tidal_blade_stuned] run tag @s remove tidal_blade_stuned
+    execute as @a[tag=tidal_blade_stuned]:
+        attribute @s jump_strength modifier remove legendaries:tidal_blade_stun_jump
+        attribute @s knockback_resistance modifier remove legendaries:tidal_blade_stun_kb
+        attribute @s explosion_knockback_resistance modifier remove legendaries:tidal_blade_stun_explosion_kb
+        tag @s remove tidal_blade_stuned
 
 
 function legendaries:tidal_blade/on_hit:
@@ -205,6 +215,7 @@ function legendaries:tidal_blade/on_hit:
                 effect give @s mining_fatigue stun_duration 4 true
                 attribute @s jump_strength modifier add legendaries:tidal_blade_stun_jump -10 add_value
                 attribute @s knockback_resistance modifier add legendaries:tidal_blade_stun_kb 1 add_value
+                attribute @s explosion_knockback_resistance modifier add legendaries:tidal_blade_stun_explosion_kb 1 add_value
                 tag @s add tidal_blade_stuned
                 schedule function legendaries:tidal_blade/clear_stun stun_duration_ticks
 
