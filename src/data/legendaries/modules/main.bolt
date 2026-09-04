@@ -115,6 +115,8 @@ function legendaries:load:
     tellraw @a ["",{color:"gold",bold:true,text:"Magician's Legendary Items"},{color:"yellow",text:" Pack has loaded!"}]
 
 function legendaries:tick:
+
+    # All legendaries tick functions
     function legendaries:legendary_glowing
     function legendaries:tempest_boots/tick
     function legendaries:ender_cloak/tick
@@ -122,3 +124,16 @@ function legendaries:tick:
     function legendaries:frenzy/tick
     function legendaries:tidal_blade/tick
     function legendaries:earthen_belt/tick
+
+    # Give glowing to all players who have a legendary
+    execute as @a[predicate=legendaries:has_legendary_inventory] run effect give @s glowing 1 0 true
+    execute as @a[predicate=legendaries:has_legendary_armor] run effect give @s glowing 1 0 true
+    execute as @a[predicate=legendaries:has_legendary_offhand] run effect give @s glowing 1 0 true
+
+function legendaries:give_all:
+    function legendaries:tidal_blade/give
+    function legendaries:frenzy/give
+    function legendaries:ancient_helm/give
+    function legendaries:ender_cloak/give
+    function legendaries:earthen_belt/give
+    function legendaries:speed_boots/give
