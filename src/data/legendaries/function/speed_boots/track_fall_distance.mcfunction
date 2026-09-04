@@ -1,2 +1,0 @@
-# Stores players fall distance into a scoreboard
-execute as @a[predicate=legendaries:wearing_speed_boots] if predicate legendaries:in_air store result score @s fall_distance run data get entity @s fall_distance

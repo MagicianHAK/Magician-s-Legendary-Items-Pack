@@ -1,0 +1,129 @@
+# Settings
+damage_per_block = 2.5 # Dmg per block fallen
+min_fall_distance = 5 # Blocks
+display_damage_to_user = 0 # (0 = Off, 1 = On)
+damage_sacle = 10 # Dont change
+
+# Settings converted for use in code
+damage_per_block_unscaled = damage_per_block * 10
+
+
+predicate legendaries:wearing_tempest_boots {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "armor.feet": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "tempest_boots": true
+                    }
+                }
+            }
+        }
+    }
+}
+
+function legendaries:tempest_boots/give:
+    # Gives @s Tempest Boots
+
+    give @s netherite_boots[unbreakable={},enchantments={"protection":4,"depth_strider":4},attribute_modifiers=[{id:"1da2ac64-3b2e-4306-9cb3-77ba9cb3330b",type:"armor",amount:3,operation:"add_value",slot:"feet"},{id:"ae920516-4903-4033-8004-8c47e820ed74",type:"armor_toughness",amount:3,operation:"add_value",slot:"feet"},{id:"f8704bd3-5366-409c-b99f-5ecd8acad1e6",type:"knockback_resistance",amount:0.1,operation:"add_value",slot:"feet"},{id:"9096524c-be5a-4625-a853-f8181e111046",type:"max_health",amount:4,operation:"add_value",slot:"feet"},{id:"5bfd4394-02a8-44d0-9f8b-4d5a8ee0c1f5",type:"fall_damage_multiplier",amount:-1,operation:"add_value",slot:"feet",display:{type:"hidden"}}],custom_name={"bold":true,"color":"white","italic":false,"text":"Tempest Boots"},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"white",text:"Having a legendary like this on gives permanet glowing."}],[{italic:false,color:"white",text:""},{color:"white",text:"Grants fall damage immunity, permanent speed 2 and"}],[{italic:false,color:"white",text:""},{color:"white",text:"2 extra hearts while wearing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"white",bold:true,text:"Explosive Impact:"}],[{italic:false,color:"white",text:""},{color:"white",text:"On landing cause a powerful explosion dealing"}],[{italic:false,color:"white",text:""},{color:"white",text:f"{damage_per_block} damage per block fallen."}]],custom_data={legendary:1b,tempest_boots:1b},equippable={slot:"feet",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:tempest_boots"] 1
+
+
+function legendaries:tempest_boots/setup:
+    # Runs all setup for Tempest Boots
+
+    # Sets up all Tempest Boots scoreboards
+    scoreboard objectives add fall_distance dummy
+
+    # Damage Mult is divided by scale so 25 would be 2.5 damage per block fallen
+    scoreboard players set $tempestBootsDamageMult settings damage_per_block_unscaled
+    scoreboard players set $tempestBootsDamageMultScale settings damage_sacle
+
+    # Minimum fall needed to trigger Tempest Boots explosion
+    scoreboard players set $tempestBootsMinFall settings min_fall_distance
+
+    # If the Tempest Boots explosion should display damage numbers (0 = false, 1 = true)
+    scoreboard players set $tempestBootsDisplayDamage settings 0
+
+
+function legendaries:tempest_boots/tick:
+    # Runs all Tempest Boot related functions and effects that need to run every tick
+
+    # Everything that need to run every tick for all player wearing Tempest Boots
+    execute as @a[predicate=legendaries:wearing_tempest_boots] at @s:
+
+        # Applys speed to players with Tempest Boots
+        effect give @s speed 1 1 true
+
+        # Stores players fall distance into a scoreboard
+        if predicate legendaries:in_air store result score @s fall_distance run data get entity @s fall_distance
+
+        # Falling Particles
+        if score @s fall_distance >= $tempestBootsMinFall settings run particle end_rod ~ ~ ~ .3 .3 .3 0 10
+        particle end_rod ~ ~ ~ .2 0 .2 0 1
+
+    # Tags in air players
+    execute as @a[predicate=legendaries:in_air, predicate=legendaries:wearing_tempest_boots] run tag @s add in_air
+
+    # Detects when a in air player lands and if the fall was big enough trigger the ability
+    execute as @a[tag=in_air, predicate=legendaries:on_ground] at @s if score @s fall_distance >= $tempestBootsMinFall settings:
+
+        # Calculate damage based on fall distance and store it
+        scoreboard players operation @s fall_distance *= $tempestBootsDamageMult settings
+        scoreboard players operation @s fall_distance /= $tempestBootsDamageMultScale settings
+        execute store result storage legendaries:explosion_damage damage int 1 run scoreboard players get @s fall_distance
+
+        # Run explosion with the stored damage
+        function legendaries:tempest_boots/explosion with storage legendaries:explosion_damage
+
+        # Clear the stored damage
+        data remove storage legendaries:explosion_damage damage
+
+    # Cleanup for players who landed this tick
+    execute as @a[tag=in_air, predicate=legendaries:on_ground] run scoreboard players set @s fall_distance 0
+    execute as @a[tag=in_air, predicate=legendaries:on_ground] run tag @s remove in_air
+
+
+function legendaries:tempest_boots/explosion:
+    # The logic for the explosion when landing
+
+    # Tag the player to be immune to the explosion
+    tag @s add exploding
+
+    # Deal the damage to all entities in range
+    $execute as @e[distance=..5, type=!item, tag=!exploding] run damage @s $(damage) explosion
+
+    # Make the player immune to explosion kb
+    attribute @s explosion_knockback_resistance modifier add legendaries:tempest_boots_kb_res 1 add_value
+    schedule function legendaries:tempest_boots/clear_kb_res 3t
+
+    # Deal kb to nearby entities
+    summon breeze_wind_charge ~ ~ ~ {Motion:[0.0,-0.5,0.0]}
+    summon breeze_wind_charge ~ ~ ~ {Motion:[0.0,-0.5,0.0]}
+
+    # Cosmetic effects
+    particle explosion ~ ~ ~ 1.5 1.5 1.5 0 50
+    $particle soul_fire_flame ~ ~ ~ 0 0 0 .2 $(damage)
+    $particle soul_fire_flame ~ ~ ~ 0 0 0 .2 $(damage)
+    playsound entity.generic.explode master @a ~ ~ ~
+
+    # Clear the immunity tag
+    tag @s remove exploding
+
+    # Display damage if the setting is on
+    $execute if score $tempestBootsDisplayDamage settings matches 1 run tellraw @s [{"bold":true,"color":"red","text":"☀"},{"bold":false,"color":"red","text":" Your Ability Dealt $(damage) Damage "},{"bold":true,"color":"red","text":"☀"}]
+
+
+function legendaries:tempest_boots/clear_kb_res:
+    # Clear explosion kb immunity
+
+    execute as @a[predicate=legendaries:wearing_tempest_boots] run attribute @s explosion_knockback_resistance modifier remove legendaries:tempest_boots_kb_res
+
+
+function legendaries:tempest_boots/toggle_damage_display:
+    # Toggles if it should display Tempest Boots explosion damage
+
+    execute if score $tempestBootsDisplayDamage settings matches 0 run return run scoreboard players set $tempestBootsDisplayDamage settings 1
+    execute if score $tempestBootsDisplayDamage settings matches 1 run scoreboard players set $tempestBootsDisplayDamage settings 0
+    
