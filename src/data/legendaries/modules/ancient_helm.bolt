@@ -1,3 +1,5 @@
+import math
+
 # Settings
 cooldown_seconds = 60 # Seconds
 raycast_range_blocks = 100 # Blocks
@@ -15,6 +17,18 @@ cooldown = cooldown_seconds * 20
 raycast_range = raycast_range_blocks * 10
 min_sneaking_time = min_sneaking_time_seconds * 20
 
+# For displaying the proper cooldown in item description
+cooldown_text = f"{cooldown_seconds} Seconds"
+if cooldown_seconds > 60:
+    minutes = math.floor(cooldown_seconds / 60)
+    seconds = cooldown_seconds % 60
+    cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        cooldown_text += "s"
+    if seconds != 0:
+        cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            cooldown_text += "s"
 
 predicate legendaries:wearing_ancient_helm {
     "condition": "minecraft:entity_properties",
@@ -35,7 +49,7 @@ predicate legendaries:wearing_ancient_helm {
 function legendaries:ancient_helm/give:
     # Gives @s The Ancient Helm
 
-    give @s netherite_pickaxe[custom_data={legendary:1b, ancient_helm:1b},custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Ancient Helm"},enchantments={"protection":4,"aqua_affinity":1,"respiration":3},unbreakable={},attribute_modifiers=[{id:"285b33c6-7a30-4e83-9cb7-a2d500357328",type:"max_health",amount:4,operation:"add_value",slot:"head"},{id:"ff811d0c-33d5-4383-9b9e-8e16f6bad3a1",type:"armor",amount:3,operation:"add_value",slot:"head"},{id:"3fde18fa-5d5f-45c3-ae47-075a74c4701c",type:"armor_toughness",amount:3,operation:"add_value",slot:"head"},{id:"8d2d04fa-9695-4387-a3cd-0e7a44bf5f40",type:"knockback_resistance",amount:0.1,operation:"add_value",slot:"head"}],lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent resistance and 2 extra hearts"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"while wearing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Eldritch Shriek: "},{color:"dark_gray",text:f"(Cooldown: {cooldown_seconds} seconds)"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"While holding sneak charge up a powerful"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"shriek that applies debuffs but become"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"blind. The longer you charge for the"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"farther away you can sense entitys from."}]],item_model="legendary_items:ancient_helm",equippable={slot:"head",equip_sound:"item.armor.equip_netherite"},!tool] 1
+    give @s netherite_pickaxe[custom_data={legendary:1b, ancient_helm:1b},custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Ancient Helm"},enchantments={"protection":4,"aqua_affinity":1,"respiration":3},unbreakable={},attribute_modifiers=[{id:"285b33c6-7a30-4e83-9cb7-a2d500357328",type:"max_health",amount:4,operation:"add_value",slot:"head"},{id:"ff811d0c-33d5-4383-9b9e-8e16f6bad3a1",type:"armor",amount:3,operation:"add_value",slot:"head"},{id:"3fde18fa-5d5f-45c3-ae47-075a74c4701c",type:"armor_toughness",amount:3,operation:"add_value",slot:"head"},{id:"8d2d04fa-9695-4387-a3cd-0e7a44bf5f40",type:"knockback_resistance",amount:0.1,operation:"add_value",slot:"head"}],lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent resistance and 2 extra hearts"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"while wearing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Eldritch Shriek: "},{color:"dark_gray",text:f"(Cooldown: {cooldown_text})"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"While holding sneak charge up a powerful"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"shriek that applies debuffs but become"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"blind. The longer you charge for the"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"farther away you can sense entitys from."}]],item_model="legendary_items:ancient_helm",equippable={slot:"head",equip_sound:"item.armor.equip_netherite"},!tool] 1
 
 
 function legendaries:ancient_helm/setup:

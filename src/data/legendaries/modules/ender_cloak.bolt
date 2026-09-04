@@ -1,4 +1,7 @@
+import math
+
 # Settings
+cooldown_seconds = 60 # Seconds
 tp_range_blocks = 80 # Blocks
 damage_boost = 2.5
 damage_boost_duration = 4
@@ -8,6 +11,18 @@ tp_range = tp_range_blocks * 10
 damage_boost_mult = damage_boost - 1
 damage_boost_duration_ticks = damage_boost_duration * 20
 
+# For displaying the proper cooldown in item description
+cooldown_text = f"{cooldown_seconds} Seconds"
+if cooldown_seconds > 60:
+    minutes = math.floor(cooldown_seconds / 60)
+    seconds = cooldown_seconds % 60
+    cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        cooldown_text += "s"
+    if seconds != 0:
+        cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            cooldown_text += "s"
 
 advancement legendaries:use_ender_cloak_ability {
     "criteria": {
@@ -115,7 +130,7 @@ recipe legendaries:ender_powder {
                 "text": "Ender Powder"
             },
             "minecraft:use_cooldown": {
-                "seconds": 30,
+                "seconds": cooldown_seconds,
                 "cooldown_group": "legendaries:ender_powder"
             },
             "minecraft:custom_data": {
@@ -130,11 +145,64 @@ recipe legendaries:ender_powder {
         "count": 2
     }
 }
+block_tag legendaries:ender_cloak_tp_through {
+    "values": [
+        "#minecraft:trapdoors",
+        "#minecraft:rails",
+        "#minecraft:copper_golem_statues",
+        "#minecraft:beds",
+        "#minecraft:all_signs",
+        "#minecraft:wooden_shelves",
+        "#minecraft:flower_pots",
+        "#minecraft:lightning_rods",
+        "#minecraft:campfires",
+        "#minecraft:chains",
+        "#minecraft:corals",
+        "#minecraft:climbable",
+        "#minecraft:saplings",
+        "#minecraft:wool_carpets",
+        "#minecraft:candles",
+        "#minecraft:replaceable",
+        "#minecraft:flowers",
+        "#minecraft:crops",
+        "#minecraft:banners",
+        "#minecraft:pressure_plates",
+        "#minecraft:buttons",
+        "minecraft:cobweb",
+        "minecraft:tripwire",
+        "minecraft:moss_carpet",
+        "minecraft:pale_moss_carpet",
+        "minecraft:pale_hanging_moss",
+        "minecraft:firefly_bush",
+        "minecraft:bamboo_sapling",
+        "minecraft:sugar_cane",
+        "minecraft:small_dripleaf",
+        "minecraft:big_dripleaf",
+        "minecraft:frogspawn",
+        "minecraft:sweet_berry_bush",
+        "minecraft:lily_pad",
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:soul_torch",
+        "minecraft:soul_wall_torch",
+        "minecraft:redstone_torch",
+        "minecraft:redstone_wall_torch",
+        "minecraft:copper_torch",
+        "minecraft:copper_wall_torch",
+        "minecraft:end_rod",
+        "minecraft:brewing_stand",
+        "minecraft:redstone_wire",
+        "minecraft:repeater",
+        "minecraft:comparator",
+        "minecraft:tripwire_hook",
+        "minecraft:daylight_detector"
+    ]
+}
 
 function legendaries:ender_cloak/give:
     # Gives @s Ender Cloak
 
-    give @s netherite_chestplate[enchantments={"protection":4},unbreakable={},custom_data={legendary:1b, ender_cloak:1b},attribute_modifiers=[{id:"5ece2df2-6d5f-4dd5-9fa0-d3070a184054",type:"armor",amount:8,operation:"add_value",slot:"chest"},{id:"464ca795-cada-4a22-972f-c666fc44b6c9",type:"armor_toughness",amount:3,operation:"add_value",slot:"chest"},{id:"8ee3b020-b2ab-4e2a-bd6a-67cf48fd4d2b",type:"knockback_resistance",amount:.1,operation:"add_value",slot:"chest"},{id:"46922099-2e3d-48d1-86d8-1348fa7f053f",type:"max_health",amount:4,operation:"add_value",slot:"chest"}],custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Ender Cloak"},lore=[" ",{"color":"light_purple","italic":false,"text":"Having a legendary like this one gives permanent glowing."},{"color":"light_purple","italic":false,"text":"Grants permanent strenght and 2 extra hearts while"},{"color":"light_purple","italic":false,"text":"wearing."}," ",[{"bold":true,"color":"dark_purple","italic":false,"text":"Ender Step: "},{"bold":false,"color":"dark_gray","italic":false,"text":"(Cooldown: 30 seconds)"}],{"color":"light_purple","italic":false,"text":"Right click with ender powder to teleport behind the"},{"color":"light_purple","italic":false,"text":f"entity you are looking at. Then deal {damage_boost}x damage on"},{"color":"light_purple","italic":false,"text":"your next attack."}],equippable={slot:"chest",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:ender_cloak"] 1
+    give @s netherite_chestplate[enchantments={"protection":4},unbreakable={},custom_data={legendary:1b, ender_cloak:1b},attribute_modifiers=[{id:"5ece2df2-6d5f-4dd5-9fa0-d3070a184054",type:"armor",amount:8,operation:"add_value",slot:"chest"},{id:"464ca795-cada-4a22-972f-c666fc44b6c9",type:"armor_toughness",amount:3,operation:"add_value",slot:"chest"},{id:"8ee3b020-b2ab-4e2a-bd6a-67cf48fd4d2b",type:"knockback_resistance",amount:.1,operation:"add_value",slot:"chest"},{id:"46922099-2e3d-48d1-86d8-1348fa7f053f",type:"max_health",amount:4,operation:"add_value",slot:"chest"}],custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Ender Cloak"},lore=[" ",{"color":"light_purple","italic":false,"text":"Having a legendary like this one gives permanent glowing."},{"color":"light_purple","italic":false,"text":"Grants permanent strenght and 2 extra hearts while"},{"color":"light_purple","italic":false,"text":"wearing."}," ",[{"bold":true,"color":"dark_purple","italic":false,"text":"Ender Step: "},{"bold":false,"color":"dark_gray","italic":false,"text":f"(Cooldown: {cooldown_text})"}],{"color":"light_purple","italic":false,"text":"Right click with ender powder to teleport behind the"},{"color":"light_purple","italic":false,"text":f"entity you are looking at. Then deal {damage_boost}x damage on"},{"color":"light_purple","italic":false,"text":"your next attack."}],equippable={slot:"chest",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:ender_cloak"] 1
 
 
 function legendaries:ender_cloak/setup:
@@ -198,7 +266,7 @@ function legendaries:ender_cloak/raycast:
             particle minecraft:dragon_breath ~ ~1 ~ 0.7 0.7 0.7 .05 150
 
     # Runs the next step of the raycast if it has not hit its limit and has not hit a block
-    execute if block ~ ~ ~ #minecraft:replaceable if score $enderCloakMaxRaycast ender_cloak_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+    execute if block ~ ~ ~ #legendaries:ender_cloak_tp_through if score $enderCloakMaxRaycast ender_cloak_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
 
 
 function legendaries:ender_cloak/clear_damage_boost:
@@ -213,3 +281,6 @@ function legendaries:ender_cloak/clear_damage_boost_self:
     advancement revoke @s only legendaries:ender_cloak_hit_entity
     attribute @s attack_damage modifier remove legendaries:ender_cloak_damage_boost
     tag @s remove ender_cloak_damage_boost
+
+    # Tell the player
+    tellraw @s ["",{color:"dark_purple",bold:true,text:"Ender Step "},{color:"light_purple",text:"damage boost is over."}]
