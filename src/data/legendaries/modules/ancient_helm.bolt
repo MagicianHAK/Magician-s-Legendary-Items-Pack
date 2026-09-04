@@ -17,19 +17,19 @@ min_sneaking_time = min_sneaking_time_seconds * 20
 
 
 predicate legendaries:wearing_ancient_helm {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "armor.head": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "ancient_helm": true
-          }
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "armor.head": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "ancient_helm": true
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 function legendaries:ancient_helm/give:

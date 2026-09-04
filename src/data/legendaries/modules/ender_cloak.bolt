@@ -10,129 +10,125 @@ damage_boost_duration_ticks = damage_boost_duration * 20
 
 
 advancement legendaries:use_ender_cloak_ability {
-  "criteria": {
-    "consume_item": {
-      "trigger": "minecraft:consume_item",
-      "conditions": {
-        "item": {
-          "predicates": {
-            "minecraft:custom_data": "{ender_powder:1b}"
-          }
+    "criteria": {
+        "consume_item": {
+            "trigger": "minecraft:consume_item",
+            "conditions": {
+                "item": {
+                    "predicates": {
+                        "minecraft:custom_data": "{ender_powder:1b}"
+                    }
+                }
+            }
         }
-      }
+    },
+    "rewards": {
+        "function": "legendaries:ender_cloak/start_raycast"
     }
-  },
-  "rewards": {
-    "function": "legendaries:ender_cloak/start_raycast"
-  }
 }
-
 advancement legendaries:ender_cloak_hit_entity {
-  "criteria": {
-    "hit_entity": {
-      "trigger": "minecraft:player_hurt_entity",
-      "conditions": {
-        "damage": {
-          "blocked": false
+    "criteria": {
+        "hit_entity": {
+            "trigger": "minecraft:player_hurt_entity",
+            "conditions": {
+                "damage": {
+                    "blocked": false
+                }
+            }
         }
-      }
+    },
+    "rewards": {
+        "function": "legendaries:ender_cloak/clear_damage_boost_self"
     }
-  },
-  "rewards": {
-    "function": "legendaries:ender_cloak/clear_damage_boost_self"
-  }
 }
-
 predicate legendaries:wearing_ender_cloak {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "armor.chest": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "ender_cloak": true
-          }
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "armor.chest": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "ender_cloak": true
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
-
 recipe legendaries:ender_powder_creative {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    [
-      "minecraft:bedrock"
-    ]
-  ],
-  "result": {
-    "id": "minecraft:netherite_pickaxe",
-    "components": {
-      "minecraft:consumable": {
-        "consume_seconds": 0.01,
-        "animation": "none",
-        "sound": "entity.player.teleport",
-        "has_consume_particles": false
-      },
-      "minecraft:item_model": "legendary_items:ender_powder",
-      "minecraft:custom_name": {
-        "italic": false,
-        "text": "Creative Ender Powder"
-      },
-      "minecraft:use_cooldown": {
-        "seconds": 1,
-        "cooldown_group": "legendaries:ender_powder_creative"
-      },
-      "minecraft:custom_data": {
-        "ender_powder": true
-      },
-      "minecraft:max_stack_size": 64,
-      "!minecraft:tool": {},
-      "!minecraft:attribute_modifiers": {},
-      "!minecraft:max_damage": {},
-      "!minecraft:damage_resistant": {}
-    },
-    "count": 2
-  }
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        [
+            "minecraft:bedrock"
+        ]
+    ],
+    "result": {
+        "id": "minecraft:netherite_pickaxe",
+        "components": {
+            "minecraft:consumable": {
+                "consume_seconds": 0.01,
+                "animation": "none",
+                "sound": "entity.player.teleport",
+                "has_consume_particles": false
+            },
+            "minecraft:item_model": "legendary_items:ender_powder",
+            "minecraft:custom_name": {
+                "italic": false,
+                "text": "Creative Ender Powder"
+            },
+            "minecraft:use_cooldown": {
+                "seconds": 1,
+                "cooldown_group": "legendaries:ender_powder_creative"
+            },
+            "minecraft:custom_data": {
+                "ender_powder": true
+            },
+            "minecraft:max_stack_size": 64,
+            "!minecraft:tool": {},
+            "!minecraft:attribute_modifiers": {},
+            "!minecraft:max_damage": {},
+            "!minecraft:damage_resistant": {}
+        },
+        "count": 2
+    }
 }
-
 recipe legendaries:ender_powder {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    [
-      "minecraft:ender_pearl"
-    ]
-  ],
-  "result": {
-    "id": "minecraft:netherite_pickaxe",
-    "components": {
-      "minecraft:consumable": {
-        "consume_seconds": 0.01,
-        "animation": "none",
-        "sound": "entity.player.teleport",
-        "has_consume_particles": false
-      },
-      "minecraft:item_model": "legendary_items:ender_powder",
-      "minecraft:custom_name": {
-        "italic": false,
-        "text": "Ender Powder"
-      },
-      "minecraft:use_cooldown": {
-        "seconds": 30,
-        "cooldown_group": "legendaries:ender_powder"
-      },
-      "minecraft:custom_data": {
-        "ender_powder": true
-      },
-      "minecraft:max_stack_size": 64,
-      "!minecraft:tool": {},
-      "!minecraft:attribute_modifiers": {},
-      "!minecraft:max_damage": {},
-      "!minecraft:damage_resistant": {}
-    },
-    "count": 2
-  }
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        [
+            "minecraft:ender_pearl"
+        ]
+    ],
+    "result": {
+        "id": "minecraft:netherite_pickaxe",
+        "components": {
+            "minecraft:consumable": {
+                "consume_seconds": 0.01,
+                "animation": "none",
+                "sound": "entity.player.teleport",
+                "has_consume_particles": false
+            },
+            "minecraft:item_model": "legendary_items:ender_powder",
+            "minecraft:custom_name": {
+                "italic": false,
+                "text": "Ender Powder"
+            },
+            "minecraft:use_cooldown": {
+                "seconds": 30,
+                "cooldown_group": "legendaries:ender_powder"
+            },
+            "minecraft:custom_data": {
+                "ender_powder": true
+            },
+            "minecraft:max_stack_size": 64,
+            "!minecraft:tool": {},
+            "!minecraft:attribute_modifiers": {},
+            "!minecraft:max_damage": {},
+            "!minecraft:damage_resistant": {}
+        },
+        "count": 2
+    }
 }
 
 function legendaries:ender_cloak/give:

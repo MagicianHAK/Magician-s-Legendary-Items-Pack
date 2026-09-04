@@ -10,19 +10,19 @@ resistance_level_text = resistance_level + 1
 dirt_health_boost_text = (dirt_health_boost_level + 1) * 2
 
 predicate legendaries:wearing_earthen_belt {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "armor.legs": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "earthen_belt": true
-          }
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "armor.legs": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "earthen_belt": true
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 function legendaries:earthen_belt/give:

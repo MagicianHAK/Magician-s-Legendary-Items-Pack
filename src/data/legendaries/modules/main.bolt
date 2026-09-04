@@ -2,97 +2,98 @@ import legendaries:tidal_blade as tidal_blade
 import legendaries:ancient_helm as ancient_helm
 import legendaries:earthen_belt as earthen_belt
 import legendaries:ender_cloak as ender_cloak
+import legendaries:frenzy as frenzy
 
 # Genral predicates
-predicate legendaries:has_legendary_armor {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "armor.*": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "legendary": true
-          }
-        }
-      }
-    }
-  }
-}
-predicate legendaries:has_legendary_inventory {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "container.*": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "legendary": true
-          }
-        }
-      }
-    }
-  }
-}
-predicate legendaries:has_legendary_offhand {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "weapon.offhand": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "legendary": true
-          }
-        }
-      }
-    }
-  }
-}
-predicate legendaries:has_regen {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "effects": {
-      "minecraft:regeneration": {}
-    }
-  }
-}
-predicate legendaries:in_air {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "flags": {
-      "is_on_ground": false
-    }
-  }
-}
-predicate legendaries:not_sneaking {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "flags": {
-      "is_sneaking": false
-    }
-  }
-}
-predicate legendaries:on_ground {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "flags": {
-      "is_on_ground": true
-    }
-  }
-}
-predicate legendaries:sneaking {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "flags": {
-      "is_sneaking": true
-    }
-  }
+predicate legendaries:has_legendary_armor { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "armor.*": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "legendary": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+predicate legendaries:has_legendary_inventory { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "container.*": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "legendary": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+predicate legendaries:has_legendary_offhand { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "weapon.offhand": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "legendary": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+predicate legendaries:has_regen { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "effects": { 
+            "minecraft:regeneration": {} 
+        } 
+    } 
+} 
+predicate legendaries:in_air { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "flags": { 
+            "is_on_ground": false 
+        } 
+    } 
+} 
+predicate legendaries:not_sneaking { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "flags": { 
+            "is_sneaking": false 
+        } 
+    } 
+} 
+predicate legendaries:on_ground { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "flags": { 
+            "is_on_ground": true 
+        } 
+    } 
+} 
+predicate legendaries:sneaking { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "flags": { 
+            "is_sneaking": true 
+        } 
+    } 
 }
 
 function legendaries:load:
@@ -101,13 +102,11 @@ function legendaries:load:
     function legendaries:ancient_helm/setup
     function legendaries:earthen_belt/setup
     function legendaries:ender_cloak/setup
+    function legendaries:frenzy/setup
 
     # Set up scoreboards
     scoreboard objectives add fall_distance dummy
     scoreboard objectives add settings dummy
-    scoreboard objectives add frenzy_cooldown dummy
-    scoreboard objectives add frenzy_cooldown_seconds dummy
-    scoreboard objectives add frenzy_cooldown_seconds_old dummy
 
     # For scaling cooldowns correctly
     scoreboard players set $ticksPerSecond settings 20

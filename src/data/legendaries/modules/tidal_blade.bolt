@@ -11,70 +11,67 @@ buff_combo_timer_duration_ticks = buff_combo_timer_duration * 20
 stun_duration_ticks = stun_duration * 20
 
 advancement legendaries:tidal_blade_hit_entity {
-  "criteria": {
-    "player_hurt_entity": {
-      "trigger": "minecraft:player_hurt_entity",
-      "conditions": {
-        "damage": {
-          "blocked": false
-        },
-        "entity": {
-          "type": "player"
+    "criteria": {
+        "player_hurt_entity": {
+            "trigger": "minecraft:player_hurt_entity",
+            "conditions": {
+                "damage": {
+                    "blocked": false
+                },
+                "entity": {
+                    "type": "player"
+                }
+            }
         }
-      }
+    },
+    "rewards": {
+        "function": "legendaries:tidal_blade/on_hit"
     }
-  },
-  "rewards": {
-    "function": "legendaries:tidal_blade/on_hit"
-  }
 }
-
 advancement legendaries:tidal_blade_player_take_damage {
-  "criteria": {
-    "entity_hurt_player": {
-      "trigger": "minecraft:entity_hurt_player",
-      "conditions": {
-        "damage": {
-          "blocked": false
+    "criteria": {
+        "entity_hurt_player": {
+            "trigger": "minecraft:entity_hurt_player",
+            "conditions": {
+                "damage": {
+                    "blocked": false
+                }
+            }
         }
-      }
+    },
+    "rewards": {
+        "function": "legendaries:tidal_blade/reset_combo"
     }
-  },
-  "rewards": {
-    "function": "legendaries:tidal_blade/reset_combo"
-  }
 }
-
 predicate legendaries:has_tidal_blade_in_hand {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "weapon.*": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "tidal_blade": true
-          }
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "tidal_blade": true
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
-
 predicate legendaries:has_tidal_blade_in_hotbar {
-  "condition": "minecraft:entity_properties",
-  "entity": "this",
-  "predicate": {
-    "slots": {
-      "hotbar.*": {
-        "predicates": {
-          "minecraft:custom_data": {
-            "tidal_blade": true
-          }
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "hotbar.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "tidal_blade": true
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
 
 function legendaries:tidal_blade/give:

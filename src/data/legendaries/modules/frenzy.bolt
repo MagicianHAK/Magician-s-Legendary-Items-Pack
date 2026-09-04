@@ -1,0 +1,205 @@
+import math
+
+# Settings
+ability_cooldown_seconds = 90 # Seconds
+buff_duration_seconds = 20 # Seconds, cant be longer than cooldown or 1 min
+damage_boost = 3
+
+# Some timings converted to ticks
+ability_cooldown = ability_cooldown_seconds * 20
+buff_duration = buff_duration_seconds * 20
+ticks_into_cooldown_to_clear = ability_cooldown - buff_duration
+
+# For displaying the proper cooldown in item description
+ability_cooldown_text = f"{ability_cooldown_seconds} Seconds"
+if ability_cooldown_seconds > 60:
+    minutes = math.floor(ability_cooldown_seconds / 60)
+    seconds = ability_cooldown_seconds % 60
+    ability_cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        ability_cooldown_text += "s"
+    if seconds != 0:
+        ability_cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            ability_cooldown_text += "s"
+
+advancement legendaries:use_frenzy_ability {
+    "criteria": {
+        "using_item": {
+            "trigger": "minecraft:using_item",
+            "conditions": {
+                "item": {
+                    "predicates": {
+                        "minecraft:custom_data": "{frenzy:1b}"
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:frenzy/ability"
+    }
+}
+predicate legendaries:has_frenzy_in_hand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "frenzy": true
+                    }
+                }
+            }
+        }
+    }
+}
+predicate legendaries:has_frenzy_in_hotbar {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "hotbar.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "frenzy": true
+                    }
+                }
+            }
+        }
+    }
+}
+item_modifier legendaries:clear_frenzy_consumable {
+    "function": "minecraft:set_components",
+    "components": {
+        "!minecraft:consumable": {}
+    }
+}
+item_modifier legendaries:frenzy_consumable {
+    "function": "minecraft:set_components",
+    "components": {
+        "minecraft:consumable": {
+            "consume_seconds": 1000000000,
+            "animation": "none",
+            "has_consume_particles": false
+        }
+    }
+}
+
+function legendaries:frenzy/give:
+    # Gives @s Frenzy
+
+    give @s netherite_axe[custom_data={legendary:1b, frenzy:1b},custom_name={"bold":true,"color":"gold","italic":false,"text":"Frenzy"},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"efficiency":5,"silk_touch":1},attribute_modifiers=[{id:"1c325728-c68d-4046-851f-4b7666e99f12",type:"attack_damage",amount:10,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 10 Attack Damage"}}},{id:"520491f4-54d5-4f8a-9d98-b18280558f85",type:"attack_speed",amount:-2.8,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 1.2 Attack Speed"}}}],lore=[" ",{"color":"yellow","italic":false,"text":"Having a legendary item like this one gives permanent glowing."},{"color":"yellow","italic":false,"text":"Grants permanent fire resistance and 2 extra hearts while"},{"color":"yellow","italic":false,"text":"in your hotbar or offhand."}," ",[{"bold":true,"color":"gold","italic":false,"text":"Raging Flame:"},{"bold":false,"color":"dark_gray","italic":false,"text":f" (Cooldown: {ability_cooldown_text})"}],{"bold":false,"color":"yellow","italic":false,"text":"On sneak right click gain increased attack speed,"},{"color":"yellow","italic":false,"text":"regeneration 2, deal extra damage and take no knockback"},{"color":"yellow","italic":false,"text":f"for {buff_duration_seconds} seconds."}],item_model="legendary_items:frenzy",enchantment_glint_override=false] 1
+
+
+function legendaries:frenzy/setup:
+    # Runs all setup for Tidal Blade
+
+    # Sets up all tidal blade related score boards
+    scoreboard objectives add frenzy_cooldown dummy
+    scoreboard objectives add frenzy_cooldown_seconds dummy
+    scoreboard objectives add frenzy_cooldown_seconds_old dummy
+
+
+function legendaries:frenzy/tick:
+    # Runs all Frenzy related functions and effects that need to run every tick
+
+    # Apply effects to players holding Frenzy
+    execute as @a[predicate=legendaries:has_frenzy_in_hotbar] run function legendaries:frenzy/apply_effects
+    execute as @a[predicate=legendaries:has_frenzy_in_hand] run function legendaries:frenzy/apply_effects
+
+    # Clear hp boost from players not holding Frenzy
+    execute as @a[predicate=!legendaries:has_frenzy_in_hotbar, predicate=!legendaries:has_frenzy_in_hand] run attribute @s max_health modifier remove legendaries:frenzy_hp_boost
+
+    # Reduce all players cooldowns by 1 tick
+    execute as @a[tag=frenzy_on_cooldown] run scoreboard players remove @s frenzy_cooldown 1
+
+    # Checks if its time to clear abilty effects
+    execute as @a[tag=frenzy_on_cooldown] if score @s frenzy_cooldown matches ticks_into_cooldown_to_clear:
+
+        # Clear the atribute moddifiers Frenzys ability applies
+        attribute @s attack_damage modifier remove legendaries:frenzy_damage_boost
+        attribute @s knockback_resistance modifier remove legendaries:frenzy_kb_res
+        tag @s remove frenzy_ability_active
+
+        # Chat alert
+        tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":" has subsided."}]
+
+    # Checks if the cooldown is over
+    execute as @a[tag=frenzy_on_cooldown] if score @s frenzy_cooldown matches 0 at @s:
+
+        # Takes Frenzys ability off cooldown
+        tag @s remove frenzy_on_cooldown
+
+        # Chat alert
+        tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":" is ready!"}]
+
+        # Sound effect
+        playsound event.mob_effect.bad_omen master @s ~ ~ ~ 1 2
+
+    # If the player holding frenzy is sneaking make it consumable
+    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:sneaking] run item modify entity @s weapon.mainhand legendaries:frenzy_consumable
+
+    # If the player holding frenzy is not sneaking make it not consumable
+    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_frenzy_consumable
+
+    # Adds all player with Frenzy to the scoreboard
+    execute as @a[predicate=legendaries:has_frenzy_in_hand] run scoreboard players add @s frenzy_cooldown 0
+
+    # Particles during ability
+    execute as @a[tag=frenzy_ability_active] at @s run particle small_flame ~ ~1 ~ 0.1 0.1 0.1 0.05 1
+    execute as @a[tag=frenzy_ability_active] at @s run particle flame ~ ~1 ~ 0.1 0.1 0.1 0.05 1
+
+
+function legendaries:frenzy/apply_effects:
+    # Apply the permanent effets from Frenzy
+
+    effect give @s fire_resistance 1 0 true
+    attribute @s max_health modifier add legendaries:frenzy_hp_boost 4 add_value
+
+
+function legendaries:frenzy/ability:
+
+    # Cleanup
+    advancement revoke @s only legendaries:use_frenzy_ability
+
+    # Triggers Frenzys ability if its off cooldown
+    execute if score @s frenzy_cooldown matches 0 run return:
+
+        # Puts the ability on cooldown
+        scoreboard players add @s frenzy_cooldown ability_cooldown
+        tag @s add frenzy_on_cooldown
+        tag @s add frenzy_ability_active
+
+        # Applys buffs (cleared in cooldown function)
+        effect give @s haste buff_duration_seconds 3 true
+        effect give @s regeneration buff_duration_seconds 1 true
+        attribute @s attack_damage modifier add legendaries:frenzy_damage_boost damage_boost add_value
+        attribute @s knockback_resistance modifier add legendaries:frenzy_kb_res 1 add_value
+
+        # Sound effects
+        playsound item.totem.use master @a ~ ~ ~ 1 .3
+
+        # Particles
+        particle flame ~ ~.5 ~ 0 0 0 .2 600
+        particle flash{color:[1,1,0,0]} ~ ~1 ~ .2 .2 .2 0 10
+        particle small_flame ~ ~1 ~ 0.3 1 0.3 0.1 50
+
+        # Chat alert
+        tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":" active for the next 30 seconds!"}]
+    
+    # Says how long the cooldown is if its on cooldown
+
+    # Convert the cooldown from tick to seconds
+    scoreboard players operation @s frenzy_cooldown_seconds = @s frenzy_cooldown
+    scoreboard players operation @s frenzy_cooldown_seconds /= $ticksPerSecond settings
+
+    # Stop the function if the cooldown is the same as the last one displayed (to prevent spam)
+    execute if score @s frenzy_cooldown_seconds = @s frenzy_cooldown_seconds_old run return fail
+
+    # Shows the cooldown in chat
+    tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":" is on cooldown for "},{"bold":false,"color":"yellow","score":{"name":"@s","objective":"frenzy_cooldown_seconds"}},{"bold":false,"color":"yellow","text":" seconds."}]
+
+    # Saves the cooldown as old cooldown to be used later (to prevent spam)
+    scoreboard players operation @s frenzy_cooldown_seconds_old = @s frenzy_cooldown_seconds
