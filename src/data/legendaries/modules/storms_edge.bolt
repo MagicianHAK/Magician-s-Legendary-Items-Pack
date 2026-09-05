@@ -1,0 +1,95 @@
+
+advancement legendaries:storms_edge_get_hit {
+    "criteria": {
+        "get_hit": {
+            "trigger": "minecraft:entity_hurt_player",
+            "conditions": {
+                "damage": {
+                    "blocked": false,
+                    "source_entity": {
+                        "slots": {
+                            "weapon.mainhand": {
+                                "predicates": {
+                                    "minecraft:custom_data": {
+                                        "storms_edge": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:storms_edge/on_hit"
+    }
+}
+
+predicate legendaries:has_storms_edge_in_hand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "storms_edge": true
+                    }
+                }
+            }
+        }
+    }
+}
+
+predicate legendaries:has_storms_edge_in_mainhand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.mainhand": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "storms_edge": true
+                    }
+                }
+            }
+        }
+    }
+}
+
+function legendaries:storms_edge/give:
+    # Gives @s Storms Edge
+
+    give @p netherite_sword[custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Storms Edge"},custom_data={legendary:1b, storms_edge:1b},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"This legendary grants permanent Haste 2 While held"}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Storm's Rath"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"On hit you have a chance of striking your opponent with lightning"}]],unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"smite":4},item_model="legendary_items:storms_edge"] 1
+
+
+function legendaries:storms_edge/setup:
+    # Runs all setup for Storms Edge
+
+    # Sets up all Storms Edge related score boards
+    scoreboard objectives add storms_edge_ability_hit dummy
+
+
+function legendaries:storms_edge/tick:
+
+    execute as @a[predicate=legendaries:has_storms_edge_in_hand] run effect give @s haste 1 0 true
+
+
+function legendaries:storms_edge/on_hit:
+
+    advancement revoke @s only legendaries:storms_edge_get_hit
+    
+    execute store result score @s storms_edge_ability_hit run random value 1..5
+
+    if score @s storms_edge_ability_hit matches 1:
+            
+        playsound minecraft:entity.lightning_bolt.thunder master @s ~ ~ ~ 10 1
+        playsound minecraft:entity.lightning_bolt.impact master @s ~ ~ ~ 10 1
+
+        damage @s 30 lightning_bolt
+        at @s run summon lightning_bolt ~ ~-10 ~
+
+
+            
+

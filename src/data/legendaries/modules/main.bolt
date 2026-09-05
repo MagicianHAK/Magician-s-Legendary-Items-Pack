@@ -4,6 +4,7 @@ import legendaries:earthen_belt as earthen_belt
 import legendaries:ender_cloak as ender_cloak
 import legendaries:frenzy as frenzy
 import legendaries:tempest_boots as tempest_boots
+import legendaries:storms_edge as storms_edge
 
 # Genral predicates
 predicate legendaries:has_legendary_armor { 
@@ -105,6 +106,7 @@ function legendaries:load:
     function legendaries:ender_cloak/setup
     function legendaries:frenzy/setup
     function legendaries:tempest_boots/setup
+    function legendaries:storms_edge/setup
 
     # Set up scoreboards
     scoreboard objectives add settings dummy
@@ -124,6 +126,7 @@ function legendaries:tick:
     function legendaries:frenzy/tick
     function legendaries:tidal_blade/tick
     function legendaries:earthen_belt/tick
+    function legendaries:storms_edge/tick
 
     # Give glowing to all players who have a legendary
     execute as @a[predicate=legendaries:has_legendary_inventory] run effect give @s glowing 1 0 true
@@ -136,4 +139,5 @@ function legendaries:give_all:
     function legendaries:ancient_helm/give
     function legendaries:ender_cloak/give
     function legendaries:earthen_belt/give
-    function legendaries:speed_boots/give
+    function legendaries:tempest_boots/give
+    function legendaries:storms_edge/give
