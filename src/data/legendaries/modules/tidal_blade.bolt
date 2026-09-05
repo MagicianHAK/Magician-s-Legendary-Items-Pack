@@ -77,7 +77,7 @@ predicate legendaries:has_tidal_blade_in_hotbar {
 function legendaries:tidal_blade/give:
     # Gives Tidal Blade to @s
 
-    give @s netherite_sword[custom_data={legendary:1b, tidal_blade:1b},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5},custom_name={"bold":true,"color":"blue","italic":false,"text":"Tidal Blade"},item_model="legendary_items:tidal_blade",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent dolphins grace, regen 2 and 2 extra"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"hearts."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Relentless Current:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_buff} hits you land gain a random buff. Resets when"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"taking damage or not landing enough hits."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Crippling Tide:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_stun} hits you land stun all nearby players. Resets"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"when not landing enough hits."}]]] 1
+    give @s netherite_sword[custom_data={legendary:1b, tidal_blade:1b},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5},custom_name={"bold":true,"color":"blue","italic":false,"text":"Tidal Blade"},item_model="legendary_items:tidal_blade",lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"Grants permanent dolphins grace and regen 2 while in your"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"hotbar or offhand."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Relentless Current:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_buff} hits you land gain a random buff. Resets when"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"taking damage or not landing enough hits."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"blue",bold:true,text:"Crippling Tide:"}],[{italic:false,color:"white",text:""},{color:"aqua",text:f"For every {hits_for_stun} hits you land stun all nearby players. Resets"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"when not landing enough hits."}]]] 1
 
 
 function legendaries:tidal_blade/setup:
@@ -110,9 +110,6 @@ function legendaries:tidal_blade/tick:
     execute as @a[predicate=legendaries:has_tidal_blade_in_hotbar] run function legendaries:tidal_blade/apply_effects
     execute as @a[predicate=legendaries:has_tidal_blade_in_hand] run function legendaries:tidal_blade/apply_effects
 
-    # Clear hp boost from players not holding Tidal Blade
-    execute as @a[predicate=!legendaries:has_tidal_blade_in_hotbar, predicate=!legendaries:has_tidal_blade_in_hand] run attribute @s max_health modifier remove legendaries:tidal_blade_hp_boost
-
     # Particles on stunned players
     execute as @a[tag=tidal_blade_stuned] at @s run particle dripping_water ~ ~1 ~ 0.3 0.6 0.3 0 2
 
@@ -122,7 +119,6 @@ function legendaries:tidal_blade/apply_effects:
 
     execute unless predicate legendaries:has_regen run effect give @s regeneration 2 1 true
     effect give @s dolphins_grace 1 0 true
-    attribute @s max_health modifier add legendaries:tidal_blade_hp_boost 4 add_value
 
 function legendaries:tidal_blade/reset_combo:
     # Resets the combo for buff

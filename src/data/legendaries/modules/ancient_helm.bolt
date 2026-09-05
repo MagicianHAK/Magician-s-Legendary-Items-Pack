@@ -3,10 +3,10 @@ import math
 # Settings
 cooldown_seconds = 60 # Seconds
 raycast_range_blocks = 100 # Blocks
-min_sneaking_time_seconds = 5 # Seconds
+min_sneaking_time_seconds = 3 # Seconds
 glowing_range_scaling = 3 # (seconds crouched * this = range in blocks)
 max_glowing_range = 100 # Blocks
-ability_damage = 7 # Sonic Boom Damage
+ability_damage = 8 # Sonic Boom Damage
 ability_debuff_duration = 8 # Seconds
 weakness_level = 0
 slowness_level = 1
@@ -165,7 +165,6 @@ function legendaries:ancient_helm/raycast:
         effect give @s slowness ability_debuff_duration slowness_level true
         effect give @s glowing ability_debuff_duration 0 true
         effect give @s mining_fatigue ability_debuff_duration mining_fatigue_level true
-        effect give @s slow_falling ability_debuff_duration 0 true
 
         # Tag to prevent double hits
         tag @s add damaged

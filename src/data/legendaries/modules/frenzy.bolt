@@ -90,7 +90,7 @@ item_modifier legendaries:frenzy_consumable {
 function legendaries:frenzy/give:
     # Gives @s Frenzy
 
-    give @s netherite_axe[custom_data={legendary:1b, frenzy:1b},custom_name={"bold":true,"color":"gold","italic":false,"text":"Frenzy"},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"efficiency":5,"silk_touch":1},attribute_modifiers=[{id:"1c325728-c68d-4046-851f-4b7666e99f12",type:"attack_damage",amount:10,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 10 Attack Damage"}}},{id:"520491f4-54d5-4f8a-9d98-b18280558f85",type:"attack_speed",amount:-2.8,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 1.2 Attack Speed"}}}],lore=[" ",{"color":"yellow","italic":false,"text":"Having a legendary item like this one gives permanent glowing."},{"color":"yellow","italic":false,"text":"Grants permanent fire resistance and 2 extra hearts while"},{"color":"yellow","italic":false,"text":"in your hotbar or offhand."}," ",[{"bold":true,"color":"gold","italic":false,"text":"Raging Flame:"},{"bold":false,"color":"dark_gray","italic":false,"text":f" (Cooldown: {ability_cooldown_text})"}],{"bold":false,"color":"yellow","italic":false,"text":"On sneak right click gain increased attack speed,"},{"color":"yellow","italic":false,"text":"regeneration 2, deal extra damage and take no knockback"},{"color":"yellow","italic":false,"text":f"for {buff_duration_seconds} seconds."}],item_model="legendary_items:frenzy",enchantment_glint_override=false] 1
+    give @s netherite_axe[custom_data={legendary:1b, frenzy:1b},custom_name={"bold":true,"color":"gold","italic":false,"text":"Frenzy"},unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"efficiency":5,"silk_touch":1},attribute_modifiers=[{id:"1c325728-c68d-4046-851f-4b7666e99f12",type:"attack_damage",amount:10,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 10 Attack Damage"}}},{id:"520491f4-54d5-4f8a-9d98-b18280558f85",type:"attack_speed",amount:-2.8,operation:"add_value",slot:"mainhand",display:{type:"override",value:{"color":"dark_green","text":" 1.2 Attack Speed"}}}],lore=[" ",{"color":"yellow","italic":false,"text":"Having a legendary item like this one gives permanent glowing."},{"color":"yellow","italic":false,"text":"Grants permanent fire resistance while in your"},{"color":"yellow","italic":false,"text":"hotbar or offhand."}," ",[{"bold":true,"color":"gold","italic":false,"text":"Raging Flame:"},{"bold":false,"color":"dark_gray","italic":false,"text":f" (Cooldown: {ability_cooldown_text})"}],{"bold":false,"color":"yellow","italic":false,"text":"On sneak right click gain increased attack speed,"},{"color":"yellow","italic":false,"text":"regeneration 2, deal extra damage and take no knockback"},{"color":"yellow","italic":false,"text":f"for {buff_duration_seconds} seconds."}],item_model="legendary_items:frenzy",enchantment_glint_override=false] 1
 
 
 function legendaries:frenzy/setup:
@@ -108,9 +108,6 @@ function legendaries:frenzy/tick:
     # Apply effects to players holding Frenzy
     execute as @a[predicate=legendaries:has_frenzy_in_hotbar] run function legendaries:frenzy/apply_effects
     execute as @a[predicate=legendaries:has_frenzy_in_hand] run function legendaries:frenzy/apply_effects
-
-    # Clear hp boost from players not holding Frenzy
-    execute as @a[predicate=!legendaries:has_frenzy_in_hotbar, predicate=!legendaries:has_frenzy_in_hand] run attribute @s max_health modifier remove legendaries:frenzy_hp_boost
 
     # Reduce all players cooldowns by 1 tick
     execute as @a[tag=frenzy_on_cooldown] run scoreboard players remove @s frenzy_cooldown 1
@@ -156,7 +153,6 @@ function legendaries:frenzy/apply_effects:
     # Apply the permanent effets from Frenzy
 
     effect give @s fire_resistance 1 0 true
-    attribute @s max_health modifier add legendaries:frenzy_hp_boost 4 add_value
 
 
 function legendaries:frenzy/ability:
