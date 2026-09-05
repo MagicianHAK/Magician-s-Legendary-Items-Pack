@@ -1,3 +1,6 @@
+# Settings
+ability_chance = 5 # 1/this chance
+ability_damage = 30
 
 advancement legendaries:storms_edge_get_hit {
     "criteria": {
@@ -80,14 +83,14 @@ function legendaries:storms_edge/on_hit:
 
     advancement revoke @s only legendaries:storms_edge_get_hit
     
-    execute store result score @s storms_edge_ability_hit run random value 1..5
+    execute store result score @s storms_edge_ability_hit run random value f"1..{ability_chance}"
 
     if score @s storms_edge_ability_hit matches 1:
             
-        playsound minecraft:entity.lightning_bolt.thunder master @s ~ ~ ~ 10 1
-        playsound minecraft:entity.lightning_bolt.impact master @s ~ ~ ~ 10 1
+        playsound minecraft:entity.lightning_bolt.thunder master @s ~ ~ ~ 15 1
+        playsound minecraft:entity.lightning_bolt.impact master @s ~ ~ ~ 15 1
 
-        damage @s 30 lightning_bolt
+        damage @s ability_damage lightning_bolt
         at @s run summon lightning_bolt ~ ~-10 ~
 
 
