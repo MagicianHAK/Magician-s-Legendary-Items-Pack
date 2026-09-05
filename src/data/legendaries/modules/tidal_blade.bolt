@@ -58,6 +58,21 @@ predicate legendaries:has_tidal_blade_in_hand {
         }
     }
 }
+predicate legendaries:has_tidal_blade_in_mainhand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.mainhand": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "tidal_blade": true
+                    }
+                }
+            }
+        }
+    }
+}
 predicate legendaries:has_tidal_blade_in_hotbar {
     "condition": "minecraft:entity_properties",
     "entity": "this",
@@ -152,7 +167,7 @@ function legendaries:tidal_blade/on_hit:
     advancement revoke @s only legendaries:tidal_blade_hit_entity
 
     # If holding Tidal Blade
-    execute if predicate legendaries:has_tidal_blade_in_hand:
+    execute if predicate legendaries:has_tidal_blade_in_mainhand:
 
         # Increase combo counter by 1 and reset combo timer for buff
         tag @s add tidal_blade_combo

@@ -61,7 +61,7 @@ predicate legendaries:has_storms_edge_in_mainhand {
 function legendaries:storms_edge/give:
     # Gives @s Storms Edge
 
-    give @p netherite_sword[custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Storms Edge"},custom_data={legendary:1b, storms_edge:1b},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"This legendary grants permanent Haste 2 While held"}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Storm's Rath"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"On hit you have a chance of striking your opponent with lightning"}]],unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"smite":4},item_model="legendary_items:storms_edge"] 1
+    give @p netherite_sword[custom_name={"bold":true,"color":"dark_aqua","italic":false,"text":"Storm's Edge"},custom_data={legendary:1b, storms_edge:1b},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"aqua",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""},{color:"aqua",text:"This legendary grants permanent Haste 2 While held"}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_aqua",bold:true,text:"Storm's Rath"}],[{italic:false,color:"white",text:""},{color:"aqua",text:"On hit you have a chance of striking your opponent with lightning"}]],unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"smite":4},item_model="legendary_items:storms_edge"] 1
 
 
 function legendaries:storms_edge/setup:
