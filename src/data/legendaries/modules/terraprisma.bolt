@@ -1,0 +1,272 @@
+import math
+
+# Settings
+ability_cooldown_seconds = 90 # Seconds
+ability_effect_duration_seconds = 20 # Seconds, Should not be higher than 60 or the cooldown
+effect_armor_reduction = 3
+effect_damage_boost = 3
+hits_for_smite = 5
+smite_damage = 27
+
+# Some timings converted to ticks
+ability_cooldown = ability_cooldown_seconds * 20
+ability_effect_duration = ability_effect_duration_seconds * 20
+
+# For displaying the proper cooldown in item description
+ability_cooldown_text = f"{ability_cooldown_seconds} Seconds"
+if ability_cooldown_seconds > 60:
+    minutes = math.floor(ability_cooldown_seconds / 60)
+    seconds = ability_cooldown_seconds % 60
+    ability_cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        ability_cooldown_text += "s"
+    if seconds != 0:
+        ability_cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            ability_cooldown_text += "s"
+
+advancement legendaries:terraprisma_right_click {
+    "criteria": {
+        "using_item": {
+            "trigger": "minecraft:using_item",
+            "conditions": {
+                "item": {
+                    "predicates": {
+                        "minecraft:custom_data": "{terraprisma:1b}"
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:terraprisma/on_right_click"
+    }
+}
+advancement legendaries:terraprisma_get_hit_by_ability {
+    "criteria": {
+        "get_hit": {
+            "trigger": "minecraft:entity_hurt_player",
+            "conditions": {
+                "damage": {
+                    "blocked": false,
+                    "source_entity": {
+                        "type": "minecraft:player",
+                        "nbt": "{Tags:[\"terraprisma_ability_charged\"]}",
+                        "slots": {
+                            "weapon.mainhand": {
+                                "predicates": {
+                                    "minecraft:custom_data": {
+                                        "terraprisma": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:terraprisma/on_get_hit_by_ability"
+    }
+}
+advancement legendaries:terraprisma_get_hit {
+    "criteria": {
+        "get_hit": {
+            "trigger": "minecraft:entity_hurt_player",
+            "conditions": {
+                "damage": {
+                    "blocked": false,
+                    "source_entity": {
+                        "type": "minecraft:player",
+                        "slots": {
+                            "weapon.mainhand": {
+                                "predicates": {
+                                    "minecraft:custom_data": {
+                                        "terraprisma": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:terraprisma/on_get_hit"
+    }
+}
+predicate legendaries:has_terraprisma_in_mainhand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.mainhand": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "terraprisma": true
+                    }
+                }
+            }
+        }
+    }
+}
+
+function legendaries:terraprisma/give:
+    # Gives @s Terraprisma
+
+    give @s netherite_sword[custom_name=[[{italic:false,color:"white",text:""},{bold:true,text:"",extra:[{color:"#A0E964",text:"T"},{color:"#90E886",text:"e"},{color:"#80E7A8",text:"r"},{color:"#70E5CA",text:"r"},{color:"#74D0D8",text:"a"},{color:"#82B1DC",text:"p"},{color:"#9091DF",text:"r"},{color:"#A285D9",text:"i"},{color:"#BBA0BC",text:"s"},{color:"#D5BBA0",text:"m"},{color:"#EFD684",text:"a"}]}]],lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:"Having a legendary item like this one gives permanent glowing."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"dark_gray",text:f"(Cooldown: {ability_cooldown_text})"}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:"On sneak right click charge your next hit to fracture your"}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:f"target's soul for {ability_effect_duration_seconds} seconds. Making them take and deal"}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:"more damage."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{bold:true,text:"",extra:[{color:"#A0E964",text:"P"},{color:"#95E87C",text:"r"},{color:"#89E794",text:"i"},{color:"#7EE6AD",text:"s"},{color:"#73E6C5",text:"m"},{color:"#6EDED6",text:"a"},{color:"#78C7D9",text:"t"},{color:"#82B1DC",text:"i"},{color:"#8C9ADE",text:"c "},{color:"#A589D5",text:"S"},{color:"#B89CC0",text:"m"},{color:"#CAAFAC",text:"i"},{color:"#DDC398",text:"t"},{color:"#EFD684",text:"e"}]}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:f"For every {hits_for_smite} hits you land on a player with a fractured soul"}],[{italic:false,color:"white",text:""},{color:"#CDF0E7",text:"call down a prismatic beam to smite them."}]],custom_data={legendary:1b, terraprisma:1b},item_model="legendary_items:terraprisma",unbreakable={},enchantments={"fire_aspect":2,"looting":3,"sharpness":5,"smite":4}] 1
+
+
+function legendaries:terraprisma/setup:
+    # Runs all setup for Terraprisma
+
+    # Sets up all Terraprisma related score boards
+    scoreboard objectives add terraprisma_cooldown dummy
+    scoreboard objectives add terraprisma_cooldown_seconds dummy
+    scoreboard objectives add terraprisma_cooldown_seconds_old dummy
+    scoreboard objectives add terraprisma_effect_timer dummy
+    scoreboard objectives add terraprisma_hit_counter dummy
+
+
+function legendaries:terraprisma/tick:
+    # Runs all Terraprisma related functions and effects that need to run every tick
+
+    # Adds all player with Terraprisma to the scoreboard
+    execute as @a[predicate=legendaries:has_terraprisma_in_mainhand] run scoreboard players add @s terraprisma_cooldown 0
+
+    # Handles cooldown logic
+    execute as @a[tag=terraprisma_on_cooldown]:
+
+        # Reduce players cooldown by 1 tick
+        scoreboard players remove @s terraprisma_cooldown 1
+
+        # Check if cooldown is over
+        if score @s terraprisma_cooldown matches 0:
+
+            # Clear cooldown tag
+            tag @s remove terraprisma_on_cooldown
+
+            # Tell player
+            tellraw @s ["",{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"#CDF0E7",text:"has recharged."}]
+
+    # Handle effect timer logic
+    execute as @a[tag=has_terraprisma_effect]:
+
+        # Reduce players effect timer by 1 tick
+        scoreboard players remove @s terraprisma_effect_timer 1
+
+        # Check if the effect has ran out
+        if score @s terraprisma_effect_timer matches 0:
+
+            # Clear tag
+            tag @s remove has_terraprisma_effect
+
+            # Reset hit counter
+            scoreboard players set @s terraprisma_hit_counter 0
+
+            # Clear the effects
+            attribute @s minecraft:armor modifier remove legendaries:terraprisma_reduce_armor
+            attribute @s minecraft:attack_damage modifier remove legendaries:terraprisma_damage_boost
+
+            # Tell player
+            tellraw @s ["",{color:"#CDF0E7",text:"Your soul is no longer"},{bold:true,text:"",extra:[{color:"#A0E964",text:" F"},{color:"#8CE88E",text:"r"},{color:"#78E6B9",text:"a"},{color:"#71D8D7",text:"c"},{color:"#82B1DC",text:"t"},{color:"#9389E0",text:"u"},{color:"#AF93CB",text:"r"},{color:"#CFB4A7",text:"e"},{color:"#EFD684",text:"d"}]}]
+
+    # If the player holding Terraprisma is sneaking make it consumable
+    execute as @a[predicate=legendaries:has_terraprisma_in_mainhand, predicate=legendaries:sneaking] run item modify entity @s weapon.mainhand legendaries:make_consumable
+
+    # If the player holding Terraprisma is not sneaking make it not consumable
+    execute as @a[predicate=legendaries:has_terraprisma_in_mainhand, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_consumable
+
+
+function legendaries:terraprisma/on_right_click:
+    
+    # Remove the trigger advancment
+    advancement revoke @s only legendaries:terraprisma_right_click
+
+    # If not on cooldown and not currently charged, charge ability
+    if entity @s[tag=!terraprisma_on_cooldown, tag=!terraprisma_ability_charged] run return:
+
+        # Give tag to trigger ability on next hit
+        tag @s add terraprisma_ability_charged
+
+        # Tell player
+        tellraw @s ["",{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"#CDF0E7",text:"charged your next hit."}]
+
+    # If on cooldown say how long left
+    if entity @s[tag=terraprisma_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s terraprisma_cooldown_seconds = @s terraprisma_cooldown
+        scoreboard players operation @s terraprisma_cooldown_seconds /= $ticksPerSecond settings
+
+        # Stop the function if the cooldown is the same as the last one displayed (to prevent spam)
+        execute if score @s terraprisma_cooldown_seconds = @s terraprisma_cooldown_seconds_old run return fail
+
+        # Shows the cooldown in chat
+        tellraw @s ["",{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"#CDF0E7",text:"is on cooldown for ",extra:[{score:{name:"@s",objective:"terraprisma_cooldown_seconds"}}]}," ",{color:"#CDF0E7",text:"seconds."}]
+
+        # Saves the cooldown as old cooldown to be used later (to prevent spam)
+        scoreboard players operation @s terraprisma_cooldown_seconds_old = @s terraprisma_cooldown_seconds
+
+
+function legendaries:terraprisma/on_get_hit_by_ability:
+    # Handles when a player is hit by fractured soul
+
+    # Remove trigger advancment
+    advancement revoke @s only legendaries:terraprisma_get_hit_by_ability
+
+    # Put nearest player with charged tag on cooldown
+    execute as @n[tag=terraprisma_ability_charged]:
+
+        # Remove charged tag
+        tag @s remove terraprisma_ability_charged
+
+        # Put player on cooldown
+        tag @s add terraprisma_on_cooldown
+        scoreboard players set @s terraprisma_cooldown ability_cooldown
+
+        # Tell player
+        tellraw @s ["",{color:"#CDF0E7",text:"Your targets soul has been"},{bold:true,text:"",extra:[{color:"#A0E964",text:" F"},{color:"#8CE88E",text:"r"},{color:"#78E6B9",text:"a"},{color:"#71D8D7",text:"c"},{color:"#82B1DC",text:"t"},{color:"#9389E0",text:"u"},{color:"#AF93CB",text:"r"},{color:"#CFB4A7",text:"e"},{color:"#EFD684",text:"d"}]}]
+    
+    # Trigger ability
+
+    # For removing the effects later
+    tag @s add has_terraprisma_effect
+    scoreboard players set @s terraprisma_effect_timer ability_effect_duration
+
+    # Apply effects
+    attribute @s minecraft:armor modifier add legendaries:terraprisma_reduce_armor f"-{effect_armor_reduction}" add_value
+    attribute @s minecraft:attack_damage modifier add legendaries:terraprisma_damage_boost effect_damage_boost add_value
+
+    # Tell player
+    tellraw @s ["",{color:"#CDF0E7",text:"Your soul has been"},{bold:true,text:"",extra:[{color:"#A0E964",text:" F"},{color:"#8CE88E",text:"r"},{color:"#78E6B9",text:"a"},{color:"#71D8D7",text:"c"},{color:"#82B1DC",text:"t"},{color:"#9389E0",text:"u"},{color:"#AF93CB",text:"r"},{color:"#CFB4A7",text:"e"},{color:"#EFD684",text:"d"}]}]
+
+
+function legendaries:terraprisma/on_get_hit:
+    # Handles prismatic smite
+
+    # Remove trigger advancment
+    advancement revoke @s only legendaries:terraprisma_get_hit
+
+    # Exit function if player dose not have effect
+    unless entity @s[tag=has_terraprisma_effect] run return fail
+
+    # Increase hit counter by one
+    scoreboard players add @s terraprisma_hit_counter 1
+
+    # Check if hit counter is at 6
+    if score @s terraprisma_hit_counter matches hits_for_smite:
+
+        # Reset hit counter
+        scoreboard players set @s terraprisma_hit_counter 0
+
+        # Trigger ability
+
+        # Deal damage
+        damage @s smite_damage magic
+
+        # Cosmetic effects
+
+

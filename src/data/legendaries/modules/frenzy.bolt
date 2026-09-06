@@ -70,22 +70,6 @@ predicate legendaries:has_frenzy_in_hotbar {
         }
     }
 }
-item_modifier legendaries:clear_frenzy_consumable {
-    "function": "minecraft:set_components",
-    "components": {
-        "!minecraft:consumable": {}
-    }
-}
-item_modifier legendaries:frenzy_consumable {
-    "function": "minecraft:set_components",
-    "components": {
-        "minecraft:consumable": {
-            "consume_seconds": 1000000000,
-            "animation": "none",
-            "has_consume_particles": false
-        }
-    }
-}
 
 function legendaries:frenzy/give:
     # Gives @s Frenzy
@@ -94,9 +78,9 @@ function legendaries:frenzy/give:
 
 
 function legendaries:frenzy/setup:
-    # Runs all setup for Tidal Blade
+    # Runs all setup for Frenzy
 
-    # Sets up all tidal blade related score boards
+    # Sets up all Frenzy related score boards
     scoreboard objectives add frenzy_cooldown dummy
     scoreboard objectives add frenzy_cooldown_seconds dummy
     scoreboard objectives add frenzy_cooldown_seconds_old dummy
@@ -136,10 +120,10 @@ function legendaries:frenzy/tick:
         playsound event.mob_effect.bad_omen master @s ~ ~ ~ 1 2
 
     # If the player holding frenzy is sneaking make it consumable
-    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:sneaking] run item modify entity @s weapon.mainhand legendaries:frenzy_consumable
+    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:sneaking] run item modify entity @s weapon.mainhand legendaries:make_consumable
 
     # If the player holding frenzy is not sneaking make it not consumable
-    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_frenzy_consumable
+    execute as @a[predicate=legendaries:has_frenzy_in_hand, predicate=legendaries:has_frenzy_in_hotbar, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_consumable
 
     # Adds all player with Frenzy to the scoreboard
     execute as @a[predicate=legendaries:has_frenzy_in_hand] run scoreboard players add @s frenzy_cooldown 0
@@ -183,7 +167,7 @@ function legendaries:frenzy/ability:
         particle small_flame ~ ~1 ~ 0.3 1 0.3 0.1 50
 
         # Chat alert
-        tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":" active for the next 30 seconds!"}]
+        tellraw @s [{"bold":true,"color":"gold","text":"Raging Flame"},{"bold":false,"color":"yellow","text":f" active for the next {buff_duration_seconds} seconds!"}]
     
     # Says how long the cooldown is if its on cooldown
 
