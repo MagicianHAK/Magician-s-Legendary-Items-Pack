@@ -1,0 +1,6 @@
+
+
+function legendaries:recluse_shield/give:
+    # Gives @s Recluse Shield
+
+    give @s shield[custom_name={"bold":true,"color":"dark_gray","italic":false,"text":"Recluse Shield"},item_model="legendary_items:recluse_shield",unbreakable={},enchantment_glint_override=false,lore=["Placeholder Text"],attribute_modifiers=[{id:"3c122cc2-efd0-4a2c-a07b-5f2024a4bb6d",type:"max_health",amount:2,operation:"add_value",slot:"any"}]] 1

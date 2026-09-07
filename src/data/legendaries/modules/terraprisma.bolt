@@ -3,10 +3,10 @@ import math
 # Settings
 ability_cooldown_seconds = 90 # Seconds
 ability_effect_duration_seconds = 20 # Seconds, Should not be higher than 60 or the cooldown
-effect_armor_reduction = 3
+effect_armor_reduction = 4
 effect_damage_boost = 3
 hits_for_smite = 5
-smite_damage = 27
+smite_damage = 25
 
 # Some timings converted to ticks
 ability_cooldown = ability_cooldown_seconds * 20
@@ -154,6 +154,9 @@ function legendaries:terraprisma/tick:
     # Handle effect timer logic
     execute as @a[tag=has_terraprisma_effect]:
 
+        # Particles
+        at @s particle block{block_state:"minecraft:amethyst_block"} ~ ~1 ~ 0.3 0.6 0.3 0 2 normal
+
         # Reduce players effect timer by 1 tick
         scoreboard players remove @s terraprisma_effect_timer 1
 
@@ -253,6 +256,9 @@ function legendaries:terraprisma/on_get_hit:
     # Exit function if player dose not have effect
     unless entity @s[tag=has_terraprisma_effect] run return fail
 
+    # Sound effect
+    playsound minecraft:block.amethyst_block.break master @a ~ ~ ~ 1 0
+
     # Increase hit counter by one
     scoreboard players add @s terraprisma_hit_counter 1
 
@@ -268,5 +274,16 @@ function legendaries:terraprisma/on_get_hit:
         damage @s smite_damage magic
 
         # Cosmetic effects
+        summon block_display ~ ~3 ~ {Tags:["terraprisma_beam"],Passengers:[{id:"minecraft:block_display",Tags:["terraprisma_beam"],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-0.75f,-7.5f,-0.75f],scale:[1.5f,15f,1.5f]},block_state:{Name:"minecraft:light_blue_stained_glass"}},{id:"minecraft:block_display",Tags:["terraprisma_beam"],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0.13052621f,0f,0.99144495f],right_rotation:[0f,0f,0f,1f],translation:[-0.9185587f,-7.5f,-0.53033006f],scale:[1.4999996f,15f,1.4999996f]},block_state:{Name:"minecraft:light_blue_stained_glass"}},{id:"minecraft:block_display",Tags:["terraprisma_beam"],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0.25881904f,0f,0.96592593f],right_rotation:[0f,0f,0f,1f],translation:[-1.0245192f,-7.5f,-0.2745191f],scale:[1.5f,14.999999f,1.5f]},block_state:{Name:"minecraft:light_blue_stained_glass"}},{id:"minecraft:block_display",Tags:["terraprisma_beam"],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0.38268346f,0f,0.9238795f],right_rotation:[0f,0f,0f,1f],translation:[-1.0606604f,-7.5f,1.7881393e-7f],scale:[1.5f,14.999999f,1.5f]},block_state:{Name:"minecraft:light_blue_stained_glass"}},{id:"minecraft:block_display",Tags:["terraprisma_beam"],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0.5f,0f,0.86602545f],right_rotation:[0f,0f,0f,1f],translation:[-1.0245192f,-7.5f,0.27451918f],scale:[1.4999999f,14.999999f,1.4999999f]},block_state:{Name:"minecraft:light_blue_stained_glass"}}],brightness:{sky:15,block:15},transformation:{left_rotation:[0f,0.60876137f,0f,0.79335344f],right_rotation:[0f,0f,0f,1f],translation:[-0.91855884f,-7.5f,0.5303302f],scale:[1.5f,15.000003f,1.5f]},block_state:{Name:"minecraft:light_blue_stained_glass"}}
+        particle minecraft:gust ~ ~10 ~ 0.8 0.3 0.8 0 250
+        particle minecraft:end_rod ~ ~5 ~ 0.8 4 0.8 0.1 200
+        playsound minecraft:block.beacon.power_select master @a ~ ~ ~ 6 2
+        playsound minecraft:block.beacon.deactivate master @a ~ ~ ~ 6 1
+        playsound minecraft:block.respawn_anchor.charge master @a ~ ~ ~ 6 0
+        schedule function legendaries:terraprisma/clear_beams 10
+
+
+function legendaries:terraprisma/clear_beams:
+    kill @e[type=block_display,tag=terraprisma_beam]
 
 

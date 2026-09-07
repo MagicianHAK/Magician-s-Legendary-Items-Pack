@@ -6,6 +6,7 @@ import legendaries:frenzy as frenzy
 import legendaries:tempest_boots as tempest_boots
 import legendaries:storms_edge as storms_edge
 import legendaries:terraprisma as terraprisma
+import legendaries:recluse_shield as recluse_shield
 
 # Genral predicates
 predicate legendaries:has_legendary_armor { 
