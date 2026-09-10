@@ -1,7 +1,7 @@
 # Settings
-damage_per_block = 2.5 # Dmg per block fallen
+damage_per_block = 2 # Dmg per block fallen
 min_fall_distance = 5 # Blocks
-display_damage_to_user = 0 # (0 = Off, 1 = On)
+display_damage_to_user = 1 # (0 = Off, 1 = On)
 damage_sacle = 10 # Dont change
 
 # Settings converted for use in code
