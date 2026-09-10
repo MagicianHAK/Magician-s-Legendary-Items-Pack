@@ -1,6 +1,146 @@
+import math
 
+# Settings
+ability_damage = 10
+poison_duration = 3
+poison_level = 1
+ability_health_max = 6 # This number or lower to trigger ability
+ability_cooldown_seconds = 30 # Seconds
+
+# Some timings converted to ticks
+ability_cooldown = ability_cooldown_seconds * 20
+ability_health_max_text = ability_health_max / 2
+
+# For displaying the proper cooldown in item description
+ability_cooldown_text = f"{ability_cooldown_seconds} Seconds"
+if ability_cooldown_seconds > 60:
+    minutes = math.floor(ability_cooldown_seconds / 60)
+    seconds = ability_cooldown_seconds % 60
+    ability_cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        ability_cooldown_text += "s"
+    if seconds != 0:
+        ability_cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            ability_cooldown_text += "s"
+
+advancement legendaries:recluse_shield_hit {
+    "criteria": {
+        "hit_player": {
+            "trigger": "minecraft:player_hurt_entity",
+            "conditions": {
+                "damage": {
+                    "blocked": true
+                },
+                "entity": {
+                    "slots": {
+                        "weapon.*": {
+                            "predicates": {
+                                "minecraft:custom_data": {
+                                    "recluse_shield": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:recluse_shield/on_hit"
+    }
+}
+predicate legendaries:has_recluse_shield_in_hand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "recluse_shield": true
+                    }
+                }
+            }
+        }
+    }
+}
+block_tag legendaries:recluse_shield_web_replace {
+    "values": [
+        "#minecraft:replaceable",
+        "#minecraft:flowers"
+    ]
+}
 
 function legendaries:recluse_shield/give:
     # Gives @s Recluse Shield
 
-    give @s shield[custom_name={"bold":true,"color":"dark_gray","italic":false,"text":"Recluse Shield"},item_model="legendary_items:recluse_shield",unbreakable={},enchantment_glint_override=false,lore=["Placeholder Text"],attribute_modifiers=[{id:"3c122cc2-efd0-4a2c-a07b-5f2024a4bb6d",type:"max_health",amount:2,operation:"add_value",slot:"any"}]] 1
+    give @s shield[custom_name={"bold":true,"color":"gray","italic":false,"text":"Recluse Shield"},custom_data={legendary:1b, recluse_shield:1b},item_model="legendary_items:recluse_shield",unbreakable={},enchantment_glint_override=false,lore=[[{italic:false,color:"white",text:""},{color:"dark_gray",text:"Having a legendary like this on gives permanet glowing."}],[{italic:false,color:"white",text:""},{color:"dark_gray",text:"While held grants 2 extra hearts and permanet weaving."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"gray",bold:true,text:"Poison Bite:"}],[{italic:false,color:"white",text:""},{color:"dark_gray",text:"When blocking a hit deal damage to the attacker and"}],[{italic:false,color:"white",text:""},{color:"dark_gray",text:"poison them."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"gray",bold:true,text:"Ensnare: "},{italic:false,color:"dark_gray",text:f"(Cooldown: {ability_cooldown_text})"}],[{italic:false,color:"white",text:""},{color:"dark_gray",text:f"Trigger at {ability_health_max_text} or less hearts. Ensnare all nearby"}],[{italic:false,color:"white",text:""},{color:"dark_gray",text:"players in webs."}]],attribute_modifiers=[{id:"3c122cc2-efd0-4a2c-a07b-5f2024a4bb6d",type:"max_health",amount:4,operation:"add_value",slot:"any"}]] 1
+
+
+function legendaries:recluse_shield/setup:
+    # Runs all setup for Recluse Shield
+
+    # Sets up all Recluse Shield related score boards
+    scoreboard objectives add recluse_shield_health health
+    scoreboard objectives add recluse_shield_cooldown dummy
+
+
+function legendaries:recluse_shield/tick:
+    # Runs all Recluse Shield related functions and effects that need to run every tick
+
+    # Applies weaving to all players holding Recluse Shield
+    execute as @a[predicate=legendaries:has_recluse_shield_in_hand] effect give @s weaving 1 0 true
+
+    # Adds all players to cooldown scoreboard if there not already
+    execute as @a[predicate=legendaries:has_recluse_shield_in_hand] run scoreboard players add @s recluse_shield_cooldown 0
+
+    # Cooldown logic
+    execute as @a[tag=recluse_shield_on_cooldown]:
+
+        # Reduce all players cooldowns by 1 tick
+        scoreboard players remove @s recluse_shield_cooldown 1
+
+        # If cooldown is over
+        if score @s recluse_shield_cooldown matches 0:
+
+            # Remove tag
+            tag @s remove recluse_shield_on_cooldown
+
+            # Tell player
+            tellraw @s ["",{color:"gray",bold:true,text:"Ensnare "},{color:"dark_gray",text:"is now ready."}]
+
+    # If player holding Recluse Shield is below set amout of HP and off cooldown
+    execute as @a[predicate=legendaries:has_recluse_shield_in_hand] at @s if score @s recluse_shield_health matches f"..{ability_health_max}" if entity @s[tag=!recluse_shield_on_cooldown]:
+
+        # Put ability on cooldown
+        scoreboard players set @s recluse_shield_cooldown ability_cooldown
+        tag @s add recluse_shield_on_cooldown
+
+        # Add tag to not web self
+        tag @s add recluse_shield_low_hp
+
+        # Web all nearby players
+        execute as @a[distance=..6,tag=!recluse_shield_low_hp] at @s run fill ~1 ~2 ~1 ~-1 ~-1 ~-1 minecraft:cobweb replace #legendaries:recluse_shield_web_replace
+
+        # Remove tag
+        tag @s remove recluse_shield_low_hp
+
+        # Tell player
+        tellraw @s ["",{color:"gray",bold:true,text:"Ensnared "},{color:"dark_gray",text:"nearby players."}]
+
+function legendaries:recluse_shield/on_hit:
+    # Damages and poisons player who hit the shield
+
+    # Remove trigger advancment
+    advancement revoke @s only legendaries:recluse_shield_hit
+
+    # Add tag so player isnt the one damaging themself
+    tag @s add recluse_shield_damaged
+
+    # Damage and poison
+    damage @s ability_damage thorns by @p[tag=!recluse_shield_damaged]
+    effect give @s poison poison_duration poison_level false
+
+    # Clear tag
+    tag @s remove recluse_shield_damaged

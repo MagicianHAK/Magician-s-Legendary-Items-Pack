@@ -128,6 +128,7 @@ function legendaries:load:
     function legendaries:tempest_boots/setup
     function legendaries:storms_edge/setup
     function legendaries:terraprisma/setup
+    function legendaries:recluse_shield/setup
 
     # Set up scoreboards
     scoreboard objectives add settings dummy
@@ -149,6 +150,7 @@ function legendaries:tick:
     function legendaries:earthen_belt/tick
     function legendaries:storms_edge/tick
     function legendaries:terraprisma/tick
+    function legendaries:recluse_shield/tick
 
     # Give glowing to all players who have a legendary
     execute as @a[predicate=legendaries:has_legendary_inventory] run effect give @s glowing 1 0 true
@@ -163,3 +165,5 @@ function legendaries:give_all:
     function legendaries:earthen_belt/give
     function legendaries:tempest_boots/give
     function legendaries:storms_edge/give
+    function legendaries:terraprisma/give
+    function legendaries:recluse_shield/give
