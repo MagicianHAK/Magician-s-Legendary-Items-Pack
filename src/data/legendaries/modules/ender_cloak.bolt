@@ -200,7 +200,7 @@ function legendaries:ender_cloak/tick:
         effect give @s strength 1 0 true
 
         # Gives all players who have ender cloak a ender conduit if they dont have one
-        unless predicate legendaries:has_ender_conduit_in_inventory unless predicate legendaries:has_ender_conduit_in_cursor unless predicate legendaries:has_ender_conduit_in_offhand run give @s netherite_pickaxe[!tool,!attribute_modifiers,!max_damage,!damage_resistant,custom_name={"color":"dark_purple","italic":false,"text":"Ender Conduit"},custom_data={ender_conduit:1b},item_model="minecraft:end_crystal",consumable={consume_seconds:1000000,animation:"none",has_consume_particles:false}] 1
+        unless predicate legendaries:has_ender_conduit_in_inventory unless predicate legendaries:has_ender_conduit_in_cursor unless predicate legendaries:has_ender_conduit_in_offhand run give @s netherite_pickaxe[!tool,!attribute_modifiers,!max_damage,!damage_resistant,custom_name={"color":"dark_purple","italic":false,"text":"Ender Conduit"},custom_data={ender_conduit:1b},item_model="legendary_items:ender_conduit",consumable={consume_seconds:1000000,animation:"none",has_consume_particles:false}] 1
 
     # Kills all dropped ender conduits
     execute as @e[type=minecraft:item] if data entity @s Item.components."minecraft:custom_data".ender_conduit run kill @s
@@ -232,10 +232,6 @@ function legendaries:ender_cloak/ability:
     # If the player is not on cooldown
     if score @s ender_cloak_cooldown matches 0:
 
-        # Puts player on cooldown
-        tag @s add ender_cloak_on_cooldown
-        scoreboard players set @s ender_cloak_cooldown cooldown
-
         # Tag the player raycasting
         tag @s add ender_cloak_raycaster
 
@@ -254,8 +250,13 @@ function legendaries:ender_cloak/raycast:
     # Removes 1 from the max distance for every .1 blocks traveled
     scoreboard players remove $enderCloakMaxRaycast ender_cloak_raycast 1
 
-    # Checks if the raycast hit a entity if it did end the raycast and tp the raycaster
+    # Checks if the raycast hit a entity
     execute positioned ~-.5 ~-.5 ~-.5 as @e[dx=0, tag=!ender_cloak_raycaster, type=!item] run return:
+
+        # Puts raycasting player on cooldown
+        execute as @a[tag=ender_cloak_raycaster]:
+            tag @s add ender_cloak_on_cooldown
+            scoreboard players set @s ender_cloak_cooldown cooldown
 
         # Tps the raycasting player behind the target
         execute at @s anchored eyes positioned ^ ^ ^-1 run tp @a[tag=ender_cloak_raycaster] ~ ~ ~ facing entity @s
