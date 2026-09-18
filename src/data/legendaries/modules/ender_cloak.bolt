@@ -10,6 +10,7 @@ damage_boost_duration = 4
 tp_range = tp_range_blocks * 10
 damage_boost_mult = damage_boost - 1
 damage_boost_duration_ticks = damage_boost_duration * 20
+cooldown = cooldown_seconds * 20
 
 # For displaying the proper cooldown in item description
 cooldown_text = f"{cooldown_seconds} Seconds"
@@ -26,19 +27,19 @@ if cooldown_seconds > 60:
 
 advancement legendaries:use_ender_cloak_ability {
     "criteria": {
-        "consume_item": {
-            "trigger": "minecraft:consume_item",
+        "using_item": {
+            "trigger": "minecraft:using_item",
             "conditions": {
                 "item": {
                     "predicates": {
-                        "minecraft:custom_data": "{ender_powder:1b}"
+                        "minecraft:custom_data": "{ender_conduit:1b}"
                     }
                 }
             }
         }
     },
     "rewards": {
-        "function": "legendaries:ender_cloak/start_raycast"
+        "function": "legendaries:ender_cloak/ability"
     }
 }
 advancement legendaries:ender_cloak_hit_entity {
@@ -71,79 +72,50 @@ predicate legendaries:wearing_ender_cloak {
         }
     }
 }
-recipe legendaries:ender_powder_creative {
-    "type": "minecraft:crafting_shapeless",
-    "ingredients": [
-        [
-            "minecraft:bedrock"
-        ]
-    ],
-    "result": {
-        "id": "minecraft:netherite_pickaxe",
-        "components": {
-            "minecraft:consumable": {
-                "consume_seconds": 0.01,
-                "animation": "none",
-                "sound": "entity.player.teleport",
-                "has_consume_particles": false
-            },
-            "minecraft:item_model": "legendary_items:ender_powder",
-            "minecraft:custom_name": {
-                "italic": false,
-                "text": "Creative Ender Powder"
-            },
-            "minecraft:use_cooldown": {
-                "seconds": 1,
-                "cooldown_group": "legendaries:ender_powder_creative"
-            },
-            "minecraft:custom_data": {
-                "ender_powder": true
-            },
-            "minecraft:max_stack_size": 64,
-            "!minecraft:tool": {},
-            "!minecraft:attribute_modifiers": {},
-            "!minecraft:max_damage": {},
-            "!minecraft:damage_resistant": {}
-        },
-        "count": 2
-    }
-}
-recipe legendaries:ender_powder {
-    "type": "minecraft:crafting_shapeless",
-    "ingredients": [
-        [
-            "minecraft:ender_pearl"
-        ]
-    ],
-    "result": {
-        "id": "minecraft:netherite_pickaxe",
-        "components": {
-            "minecraft:consumable": {
-                "consume_seconds": 0.01,
-                "animation": "none",
-                "sound": "entity.player.teleport",
-                "has_consume_particles": false
-            },
-            "minecraft:item_model": "legendary_items:ender_powder",
-            "minecraft:custom_name": {
-                "italic": false,
-                "text": "Ender Powder"
-            },
-            "minecraft:use_cooldown": {
-                "seconds": cooldown_seconds,
-                "cooldown_group": "legendaries:ender_powder"
-            },
-            "minecraft:custom_data": {
-                "ender_powder": true
-            },
-            "minecraft:max_stack_size": 64,
-            "!minecraft:tool": {},
-            "!minecraft:attribute_modifiers": {},
-            "!minecraft:max_damage": {},
-            "!minecraft:damage_resistant": {}
-        },
-        "count": 2
-    }
+predicate legendaries:has_ender_conduit_in_inventory { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "container.*": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "ender_conduit": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+predicate legendaries:has_ender_conduit_in_cursor { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "player.cursor": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "ender_conduit": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 
+predicate legendaries:has_ender_conduit_in_offhand { 
+    "condition": "minecraft:entity_properties", 
+    "entity": "this", 
+    "predicate": { 
+        "slots": { 
+            "weapon.offhand": { 
+                "predicates": { 
+                    "minecraft:custom_data": { 
+                        "ender_conduit": true 
+                    } 
+                } 
+            } 
+        } 
+    } 
 }
 block_tag legendaries:ender_cloak_tp_through {
     "values": [
@@ -202,7 +174,7 @@ block_tag legendaries:ender_cloak_tp_through {
 function legendaries:ender_cloak/give:
     # Gives @s Ender Cloak
 
-    give @s netherite_chestplate[enchantments={"protection":4},unbreakable={},custom_data={legendary:1b, ender_cloak:1b},attribute_modifiers=[{id:"5ece2df2-6d5f-4dd5-9fa0-d3070a184054",type:"armor",amount:8,operation:"add_value",slot:"chest"},{id:"464ca795-cada-4a22-972f-c666fc44b6c9",type:"armor_toughness",amount:3,operation:"add_value",slot:"chest"},{id:"8ee3b020-b2ab-4e2a-bd6a-67cf48fd4d2b",type:"knockback_resistance",amount:.1,operation:"add_value",slot:"chest"},{id:"46922099-2e3d-48d1-86d8-1348fa7f053f",type:"max_health",amount:4,operation:"add_value",slot:"chest"}],custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Ender Cloak"},lore=[" ",{"color":"light_purple","italic":false,"text":"Having a legendary like this one gives permanent glowing."},{"color":"light_purple","italic":false,"text":"Grants permanent strength and 2 extra hearts while"},{"color":"light_purple","italic":false,"text":"wearing."}," ",[{"bold":true,"color":"dark_purple","italic":false,"text":"Ender Step: "},{"bold":false,"color":"dark_gray","italic":false,"text":f"(Cooldown: {cooldown_text})"}],{"color":"light_purple","italic":false,"text":"Right click with ender powder to teleport behind the"},{"color":"light_purple","italic":false,"text":f"entity you are looking at. Then deal {damage_boost}x damage on"},{"color":"light_purple","italic":false,"text":"your next attack."}],equippable={slot:"chest",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:ender_cloak"] 1
+    give @s netherite_chestplate[enchantments={"protection":4},unbreakable={},custom_data={legendary:1b, ender_cloak:1b},attribute_modifiers=[{id:"5ece2df2-6d5f-4dd5-9fa0-d3070a184054",type:"armor",amount:8,operation:"add_value",slot:"chest"},{id:"464ca795-cada-4a22-972f-c666fc44b6c9",type:"armor_toughness",amount:3,operation:"add_value",slot:"chest"},{id:"8ee3b020-b2ab-4e2a-bd6a-67cf48fd4d2b",type:"knockback_resistance",amount:.1,operation:"add_value",slot:"chest"},{id:"46922099-2e3d-48d1-86d8-1348fa7f053f",type:"max_health",amount:4,operation:"add_value",slot:"chest"}],custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Ender Cloak"},lore=[" ",{"color":"light_purple","italic":false,"text":"Having a legendary like this one gives permanent glowing."},{"color":"light_purple","italic":false,"text":"Grants permanent strength and 2 extra hearts while"},{"color":"light_purple","italic":false,"text":"wearing."}," ",[{"bold":true,"color":"dark_purple","italic":false,"text":"Ender Step: "},{"bold":false,"color":"dark_gray","italic":false,"text":f"(Cooldown: {cooldown_text})"}],{"color":"light_purple","italic":false,"text":"Right click with an Ender Conduit to teleport behind the"},{"color":"light_purple","italic":false,"text":f"entity you are looking at. Then deal {damage_boost}x damage on"},{"color":"light_purple","italic":false,"text":"your next attack."}],equippable={slot:"chest",equip_sound:"item.armor.equip_netherite",asset_id:"legendary_items:legendary"},item_model="legendary_items:ender_cloak"] 1
 
 
 function legendaries:ender_cloak/setup:
@@ -210,6 +182,8 @@ function legendaries:ender_cloak/setup:
 
     # Sets up all Ender Cloak scoreboards
     scoreboard objectives add ender_cloak_raycast dummy
+    scoreboard objectives add ender_cloak_cooldown dummy
+    scoreboard objectives add ender_cloak_cooldown_seconds dummy
 
     # Max distance Ender Cloak ability works from (set in raycast function)
     scoreboard players add $enderCloakMaxRaycast ender_cloak_raycast 0
@@ -217,27 +191,62 @@ function legendaries:ender_cloak/setup:
 
 function legendaries:ender_cloak/tick:
     
-    # Applies strength to all players wearing Ender Cloak
-    execute as @a[predicate=legendaries:wearing_ender_cloak] run effect give @s strength 1 0 true
+    execute as @a[predicate=legendaries:wearing_ender_cloak]:
+
+        # Gives all players without one a cooldown score
+        scoreboard players add @s ender_cloak_cooldown 0
+
+        # Applies strength to all players wearing Ender Cloak
+        effect give @s strength 1 0 true
+
+        # Gives all players who have ender cloak a ender conduit if they dont have one
+        unless predicate legendaries:has_ender_conduit_in_inventory unless predicate legendaries:has_ender_conduit_in_cursor unless predicate legendaries:has_ender_conduit_in_offhand run give @s netherite_pickaxe[!tool,!attribute_modifiers,!max_damage,!damage_resistant,custom_name={"color":"dark_purple","italic":false,"text":"Ender Conduit"},custom_data={ender_conduit:1b},item_model="minecraft:end_crystal",consumable={consume_seconds:1000000,animation:"none",has_consume_particles:false}] 1
+
+    # Kills all dropped ender conduits
+    execute as @e[type=minecraft:item] if data entity @s Item.components."minecraft:custom_data".ender_conduit run kill @s
+
+    # Reduce cooldown
+    execute as @a[tag=ender_cloak_on_cooldown]:
+
+        # Reduce all players cooldown by 1 tick
+        scoreboard players remove @s ender_cloak_cooldown 1
+
+        # If cooldown is over
+        if score @s ender_cloak_cooldown matches 0:
+
+            # Take Ender Cloak off cooldwon
+            tag @s remove ender_cloak_on_cooldown
+
+            # Tell player
+            tellraw @s ["",{color:"dark_purple",bold:true,text:"Ender Step "},{color:"light_purple",text:"is ready!"}]
 
 
-function legendaries:ender_cloak/start_raycast:
+function legendaries:ender_cloak/ability:
 
-    # Clear the advancment and only continue if the player is wearing the ender cloak
+    # Clear the trigger advancment
     advancement revoke @s only legendaries:use_ender_cloak_ability
+
+    # Exits if the player is not wearing Ender Cloak
     execute unless predicate legendaries:wearing_ender_cloak run return fail
 
-    # Tag the player raycasting
-    tag @s add ender_cloak_raycaster
+    # If the player is not on cooldown
+    if score @s ender_cloak_cooldown matches 0:
 
-    # Max distance of the raycast (number of blocks * 10)
-    scoreboard players set $enderCloakMaxRaycast ender_cloak_raycast tp_range
+        # Puts player on cooldown
+        tag @s add ender_cloak_on_cooldown
+        scoreboard players set @s ender_cloak_cooldown cooldown
 
-    # Starts the raycast
-    execute anchored eyes positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+        # Tag the player raycasting
+        tag @s add ender_cloak_raycaster
 
-    # Cleanup
-    tag @s remove ender_cloak_raycaster
+        # Max distance of the raycast (number of blocks * 10)
+        scoreboard players set $enderCloakMaxRaycast ender_cloak_raycast tp_range
+
+        # Starts the raycast
+        execute anchored eyes positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+
+        # Removes tag
+        tag @s remove ender_cloak_raycaster
 
 
 function legendaries:ender_cloak/raycast:

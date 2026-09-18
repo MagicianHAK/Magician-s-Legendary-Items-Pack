@@ -7,6 +7,7 @@ import legendaries:tempest_boots as tempest_boots
 import legendaries:storms_edge as storms_edge
 import legendaries:terraprisma as terraprisma
 import legendaries:recluse_shield as recluse_shield
+import legendaries:enigma as enigma
 
 # Genral predicates
 predicate legendaries:has_legendary_armor { 
@@ -157,6 +158,9 @@ function legendaries:tick:
     execute as @a[predicate=legendaries:has_legendary_armor] run effect give @s glowing 1 0 true
     execute as @a[predicate=legendaries:has_legendary_offhand] run effect give @s glowing 1 0 true
 
+    # Handles displaying cooldowns
+    execute as @a function legendaries:cooldown_display
+
 function legendaries:give_all:
     function legendaries:tidal_blade/give
     function legendaries:frenzy/give
@@ -167,3 +171,88 @@ function legendaries:give_all:
     function legendaries:storms_edge/give
     function legendaries:terraprisma/give
     function legendaries:recluse_shield/give
+
+
+function legendaries:cooldown_display:
+    # Generates the cooldown msg for all legendaries and displays it
+
+    # Ancient Helm Text
+    if entity @s[tag=ancient_helm_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s ancient_helm_cooldown_seconds = @s ancient_helm_cooldown
+        scoreboard players operation @s ancient_helm_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"dark_aqua",text:"Eldritch Shriek: ",extra:[{score:{name:"@s",objective:"ancient_helm_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Ender Cloak Text
+    if entity @s[tag=ender_cloak_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s ender_cloak_cooldown_seconds = @s ender_cloak_cooldown
+        scoreboard players operation @s ender_cloak_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"dark_purple",text:"Ender Step: ",extra:[{score:{name:"@s",objective:"ender_cloak_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Frenzy Text
+    if entity @s[tag=frenzy_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s frenzy_cooldown_seconds = @s frenzy_cooldown
+        scoreboard players operation @s frenzy_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"|"},{color:"gold",text:" Raging Flame: ",extra:[{score:{name:"@s",objective:"frenzy_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Recluse Shield Text
+    if entity @s[tag=recluse_shield_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s recluse_shield_cooldown_seconds = @s recluse_shield_cooldown
+        scoreboard players operation @s recluse_shield_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"gray",text:"Ensnare: ",extra:[{score:{name:"@s",objective:"recluse_shield_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Terraprisma Text
+    if entity @s[tag=terraprisma_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s terraprisma_cooldown_seconds = @s terraprisma_cooldown
+        scoreboard players operation @s terraprisma_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"|"},{color:"#CDF0E7",text:" Fractured Soul: ",extra:[{score:{name:"@s",objective:"terraprisma_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Adds the final | to the end of the msg if there are any cooldowns active right now
+    if entity @s[tag=has_cooldown] run data modify storage legendaries:text cooldown append value {color:"white",text:"|"}
+
+    # Displays cooldwon text
+    function legendaries:cooldown_display_macro with storage legendaries:text
+
+    # Clears old cooldwon text and tag
+    data remove storage legendaries:text cooldown
+    tag @s remove has_cooldown
+
+function legendaries:cooldown_display_macro:
+    # Displays the given cooldown text
+    $title @s actionbar $(cooldown)
+
+

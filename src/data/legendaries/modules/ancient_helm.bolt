@@ -61,6 +61,7 @@ function legendaries:ancient_helm/setup:
     scoreboard objectives add ancient_helm_range dummy
     scoreboard objectives add ancient_helm_damage dummy
     scoreboard objectives add ancient_helm_cooldown dummy
+    scoreboard objectives add ancient_helm_cooldown_seconds dummy
 
     # Max range for ancient helm glowing
     scoreboard players set $ancientHelmMaxGlowingRange settings max_glowing_range

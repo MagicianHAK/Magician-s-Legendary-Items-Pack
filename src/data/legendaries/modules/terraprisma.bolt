@@ -176,8 +176,8 @@ function legendaries:terraprisma/tick:
             # Tell player
             tellraw @s ["",{color:"#CDF0E7",text:"Your soul is no longer"},{bold:true,text:"",extra:[{color:"#A0E964",text:" F"},{color:"#8CE88E",text:"r"},{color:"#78E6B9",text:"a"},{color:"#71D8D7",text:"c"},{color:"#82B1DC",text:"t"},{color:"#9389E0",text:"u"},{color:"#AF93CB",text:"r"},{color:"#CFB4A7",text:"e"},{color:"#EFD684",text:"d"}]}]
 
-    # If the player holding Terraprisma is sneaking make it consumable
-    execute as @a[predicate=legendaries:has_terraprisma_in_mainhand, predicate=legendaries:sneaking] run item modify entity @s weapon.mainhand legendaries:make_consumable
+    # If the player holding Terraprisma is sneaking and not on cooldown make it consumable
+    execute as @a[predicate=legendaries:has_terraprisma_in_mainhand, predicate=legendaries:sneaking, tag=!terraprisma_on_cooldown, tag=!terraprisma_ability_charged] run item modify entity @s weapon.mainhand legendaries:make_consumable
 
     # If the player holding Terraprisma is not sneaking make it not consumable
     execute as @a[predicate=legendaries:has_terraprisma_in_mainhand, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_consumable
@@ -194,24 +194,11 @@ function legendaries:terraprisma/on_right_click:
         # Give tag to trigger ability on next hit
         tag @s add terraprisma_ability_charged
 
+        # Clear consumable
+        item modify entity @s weapon.mainhand legendaries:clear_consumable
+
         # Tell player
         tellraw @s ["",{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"#CDF0E7",text:"charged your next hit."}]
-
-    # If on cooldown say how long left
-    if entity @s[tag=terraprisma_on_cooldown]:
-
-        # Convert the cooldown from tick to seconds
-        scoreboard players operation @s terraprisma_cooldown_seconds = @s terraprisma_cooldown
-        scoreboard players operation @s terraprisma_cooldown_seconds /= $ticksPerSecond settings
-
-        # Stop the function if the cooldown is the same as the last one displayed (to prevent spam)
-        execute if score @s terraprisma_cooldown_seconds = @s terraprisma_cooldown_seconds_old run return fail
-
-        # Shows the cooldown in chat
-        tellraw @s ["",{bold:true,text:"",extra:[{color:"#A0E964",text:"F"},{color:"#94E87E",text:"r"},{color:"#88E798",text:"a"},{color:"#7BE6B2",text:"c"},{color:"#6FE5CC",text:"t"},{color:"#72D5D7",text:"u"},{color:"#7DBDDA",text:"r"},{color:"#87A4DD",text:"e"},{color:"#928CE0",text:"d "},{color:"#B398C5",text:"S"},{color:"#C7ACAF",text:"o"},{color:"#DBC19A",text:"u"},{color:"#EFD684",text:"l "}]},{color:"#CDF0E7",text:"is on cooldown for ",extra:[{score:{name:"@s",objective:"terraprisma_cooldown_seconds"}}]}," ",{color:"#CDF0E7",text:"seconds."}]
-
-        # Saves the cooldown as old cooldown to be used later (to prevent spam)
-        scoreboard players operation @s terraprisma_cooldown_seconds_old = @s terraprisma_cooldown_seconds
 
 
 function legendaries:terraprisma/on_get_hit_by_ability:
@@ -220,7 +207,7 @@ function legendaries:terraprisma/on_get_hit_by_ability:
     # Remove trigger advancment
     advancement revoke @s only legendaries:terraprisma_get_hit_by_ability
 
-    # Put nearest player with charged tag on cooldown
+    # Puts nearest player with charged tag on cooldown
     execute as @n[tag=terraprisma_ability_charged]:
 
         # Remove charged tag

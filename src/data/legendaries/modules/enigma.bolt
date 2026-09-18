@@ -1,0 +1,6 @@
+
+
+function legendaries:enigma/give:
+    # Gives @s Enigma
+
+    give @s netherite_sword[custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Enigma"},custom_data={legendary:1b, enigma:1b},item_model="legendary_items:enigma",unbreakable={},enchantment_glint_override=false,enchantments={"fire_aspect":2,"looting":3,"sharpness":5},lore=["Placeholder Lore"]] 1

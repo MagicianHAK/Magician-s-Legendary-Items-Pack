@@ -84,6 +84,7 @@ function legendaries:recluse_shield/setup:
     # Sets up all Recluse Shield related score boards
     scoreboard objectives add recluse_shield_health health
     scoreboard objectives add recluse_shield_cooldown dummy
+    scoreboard objectives add recluse_shield_cooldown_seconds dummy
 
 
 function legendaries:recluse_shield/tick:
