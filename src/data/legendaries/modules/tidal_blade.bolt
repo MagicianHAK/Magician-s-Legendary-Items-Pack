@@ -1,9 +1,10 @@
 # Settings
 hits_for_buff = 4
 hits_for_stun = 20
-stun_duration = 5 # Seconds
-buff_combo_timer_duration = 2 # Seconds
-stun_combo_timer_duration = 5 # Seconds
+stun_duration = 7 # Seconds
+effect_duration = 13
+buff_combo_timer_duration = 3 # Seconds
+stun_combo_timer_duration = 6 # Seconds
 
 # Some timings converted to ticks
 stun_combo_timer_duration_ticks = stun_combo_timer_duration * 20
@@ -192,12 +193,12 @@ function legendaries:tidal_blade/on_hit:
 
             # If 1 give strength
             execute if score @s tidal_blade_buff matches 1 run return:
-                effect give @s strength 10 1 true
+                effect give @s strength effect_duration 1 true
                 tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"gold",bold:true,text:"strength!"}]
             
             # If 2 give speed
             execute if score @s tidal_blade_buff matches 2 run return:
-                effect give @s speed 10 2 true
+                effect give @s speed effect_duration 2 true
                 tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"white",bold:true,text:"speed!"}]
 
             # If 3 give health
@@ -207,7 +208,7 @@ function legendaries:tidal_blade/on_hit:
 
             # If 2 give haste
             execute if score @s tidal_blade_buff matches 4 run return:
-                effect give @s haste 10 2 true
+                effect give @s haste effect_duration 2 true
                 tellraw @s ["",{color:"blue",bold:true,text:"Relentless Current "},{color:"aqua",text:"grants you "},{color:"yellow",bold:true,text:"haste!"}]
 
         # Checks if stun for combo should be applied
