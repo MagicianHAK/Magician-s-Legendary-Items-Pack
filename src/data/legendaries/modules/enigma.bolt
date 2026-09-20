@@ -1,6 +1,309 @@
+import math
 
+# Settings
+ability_cooldown_seconds = 60 # Seconds
+rune_timer_seconds = 5 # Time in seconds that it take for a rune to deal damage
+rune_text_timer_seconds = 2 # Time in seconds that the visual text lasts for
+rune_damage = 50
+spinning_speed_scaling = 400
+
+# Some timings converted to ticks
+ability_cooldown = ability_cooldown_seconds * 20
+rune_text_timer = rune_text_timer_seconds * 20 
+rune_timer = rune_timer_seconds * 20
+
+# For displaying the proper cooldown in item description
+ability_cooldown_text = f"{ability_cooldown_seconds} Seconds"
+if ability_cooldown_seconds > 60:
+    minutes = math.floor(ability_cooldown_seconds / 60)
+    seconds = ability_cooldown_seconds % 60
+    ability_cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        ability_cooldown_text += "s"
+    if seconds != 0:
+        ability_cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            ability_cooldown_text += "s"
+
+advancement legendaries:enigma_on_use {
+    "criteria": {
+        "use_item": {
+            "trigger": "minecraft:using_item",
+            "conditions": {
+                "item": {
+                    "predicates": {
+                        "minecraft:custom_data": {
+                            "enigma": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:enigma/on_use"
+    }
+}
+predicate legendaries:has_enigma_in_mainhand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.mainhand": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "enigma": true
+                    }
+                }
+            }
+        }
+    }
+}
+predicate legendaries:has_enigma_in_hotbar {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "hotbar.*": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "enigma": true
+                    }
+                }
+            }
+        }
+    }
+}
+item_modifier legendaries:hide_enigma {
+    "function": "minecraft:set_components",
+    "components": {
+        "minecraft:item_model": "minecraft:diamond_sword",
+        "minecraft:enchantment_glint_override": true
+    }
+}
+item_modifier legendaries:show_enigma {
+    "function": "minecraft:set_components",
+    "components": {
+        "minecraft:item_model": "legendary_items:enigma",
+        "minecraft:enchantment_glint_override": false
+    }
+}
 
 function legendaries:enigma/give:
     # Gives @s Enigma
 
-    give @s netherite_sword[custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Enigma"},custom_data={legendary:1b, enigma:1b},item_model="legendary_items:enigma",unbreakable={},enchantment_glint_override=false,enchantments={"fire_aspect":2,"looting":3,"sharpness":5},lore=["Placeholder Lore"]] 1
+    give @s netherite_sword[custom_name={"bold":true,"color":"dark_purple","italic":false,"text":"Enigma"},custom_data={legendary:1b, enigma:1b},item_model="legendary_items:enigma",unbreakable={},enchantment_glint_override=false,enchantments={"fire_aspect":2,"looting":3,"sharpness":5},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_purple",bold:true,text:"Enigmatic Shroud:"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"When not wearing any armor gain invisibility. Holding"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"Enigma during this will cause it to disguise itself as"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"a normal diamond sword untill the next time you"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"use Abyssal Rune."}],[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"dark_purple",bold:true,text:"Abyssal Rune: "},{color:"dark_gray",text:f"(Cooldown: {ability_cooldown_text})"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"On sneak right click summon a rune that after 5"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"seconds will explode dealing massive damage to"}],[{italic:false,color:"white",text:""},{color:"light_purple",text:"everything inside except yourself."}]]] 1
+
+
+function legendaries:enigma/setup:
+    # Runs all setup for Enigma
+
+    # Sets up all Enigma scoreboards
+    scoreboard objectives add enigma_cooldown dummy
+    scoreboard objectives add enigma_cooldown_seconds dummy
+    scoreboard objectives add enigma_rune_timer dummy
+    scoreboard objectives add enigma_text_timer dummy
+    scoreboard objectives add enigma_text_variant dummy
+    scoreboard objectives add enigma_rune_speed dummy
+
+    # Rune speed scaling
+    scoreboard players set $enigma_rune_speed settings spinning_speed_scaling
+
+function legendaries:enigma/tick:
+    # Runs all Enigma related functions and effects that need to run every tick
+
+    execute as @a[predicate=legendaries:not_wearing_armor]:
+
+        # Gives all players with Enigma invs while not wearing armor
+        if predicate legendaries:has_enigma_in_hotbar run effect give @s invisibility 1 0 false
+
+        # Hide Enigma if holding it while not wearing armor
+        if predicate legendaries:has_enigma_in_mainhand run item modify entity @s weapon.mainhand legendaries:hide_enigma
+
+    # Rune visuals
+    execute as @e[tag=enigma_rune] at @s run function legendaries:enigma/rune_visuals
+
+    # Handles removing old rune text
+    execute as @e[type=text_display, tag=enigma_rune_text]:
+
+        # Reduce timer by 1 tick
+        scoreboard players remove @s enigma_text_timer 1
+
+        # If timer hits 0 remove the text
+        if score @s enigma_text_timer matches 0 run kill @s
+
+    # Adds all player to the cooldown scoreboard
+    execute as @a[predicate=legendaries:has_enigma_in_mainhand] run scoreboard players add @s enigma_cooldown 0
+
+    # Cooldown logic
+    execute as @a[tag=enigma_on_cooldown]:
+
+        # Reduce cooldown by 1 tick
+        scoreboard players remove @s enigma_cooldown 1
+
+        # If the cooldown is over
+        if score @s enigma_cooldown matches 0:
+
+            # Remove tag
+            tag @s remove enigma_on_cooldown
+
+            # Tell player
+            tellraw @s ["",{color:"dark_purple",bold:true,text:"Abyssal Rune "},{color:"light_purple",text:"is ready!"}]
+
+    # If the player holding Enigma is sneaking and not on cooldown make it consumable
+    execute as @a[predicate=legendaries:has_enigma_in_mainhand, predicate=legendaries:sneaking, tag=!enigma_on_cooldown] run item modify entity @s weapon.mainhand legendaries:make_consumable
+
+    # If the player holding Enigma is not sneaking remove consumable
+    execute as @a[predicate=legendaries:has_enigma_in_mainhand, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_consumable
+
+    # Rune timer logic
+    execute as @a[tag=enigma_rune_active]:
+
+        # Reduce timer by 1 tick
+        scoreboard players remove @s enigma_rune_timer 1
+
+        # If the timer is over
+        if score @s enigma_rune_timer matches 0:
+
+            # Remove tag
+            tag @s remove enigma_rune_active
+
+            # Tag player to be immune to rune
+            tag @s add enigma_rune_owner
+
+            # Stores current players id in a fake player
+            scoreboard players operation $enigma_rune_owner id = @s id
+
+            # Explodes all runes with the same id as the player
+            execute as @e[type=item_display, tag=enigma_rune] if score @s id = $enigma_rune_owner id at @s run function legendaries:enigma/rune_explode
+            
+            # Remove immunity tag
+            tag @s remove enigma_rune_owner
+
+
+function legendaries:enigma/on_use:
+
+    # Remove trigger advancement
+    advancement revoke @s only legendaries:enigma_on_use
+
+    # If player is not on cooldown
+    if score @s enigma_cooldown matches 0:
+
+        # Put player on cooldown
+        tag @s add enigma_on_cooldown
+        scoreboard players set @s enigma_cooldown ability_cooldown
+        item modify entity @s weapon.mainhand legendaries:clear_consumable
+
+        # Reveal Enigma if hidden
+        item modify entity @s weapon.mainhand legendaries:show_enigma
+
+        # Spawn rune
+        summon item_display ~ ~0.1 ~ {interpolation_duration:1,teleport_duration:1,Tags:["enigma_rune", "no_id"],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,0f,0f],scale:[5f,0.1f,5f]},item:{id:"minecraft:barrier",count:1,components:{"minecraft:item_model":"legendary_items:enigma_rune"}}}
+
+        # Give the rune an id matching the player
+        scoreboard players operation @e[type=item_display, tag=enigma_rune, tag=no_id] id = @s id
+        execute as @e[type=item_display, tag=enigma_rune, tag=no_id] run tag @s remove no_id
+
+        # Start timer for rune
+        tag @s add enigma_rune_active
+        scoreboard players set @s enigma_rune_timer rune_timer
+
+
+function legendaries:enigma/rune_visuals:
+
+        # Finds rune owner and tags them
+        scoreboard players operation $current_enigma_rune id = @s id
+        execute as @a if score @s id = $current_enigma_rune id run tag @s add enigma_rune_owner
+
+        # Sound
+        execute as @a[tag=enigma_rune_owner] if score @s enigma_rune_timer matches 30..:
+            playsound particle.soul_escape master @a ~ ~ ~ 6 1
+
+            execute as @a[tag=enigma_rune_owner] if score @s enigma_rune_timer matches 50..:
+                playsound ambient.basalt_deltas.mood master @a ~ ~ ~ 4 0
+
+        # Calculate the speed to rotate the rune
+        scoreboard players operation @s enigma_rune_speed = $enigma_rune_speed settings
+        scoreboard players operation @s enigma_rune_speed /= @p[tag=enigma_rune_owner] enigma_rune_timer
+        execute as @a if score @s id = $current_enigma_rune id run tag @s remove enigma_rune_owner
+
+        # Store speed
+        execute store result storage legendaries:engima_rune_speed angle int 1 run scoreboard players get @s enigma_rune_speed
+
+        # Rotate rune
+        function legendaries:enigma/roatate_self with storage legendaries:engima_rune_speed
+
+        # Empty the storage
+        data remove storage legendaries:engima_rune_speed angle
+
+        # Tag current rune
+        tag @s add enigma_current_rune
+
+        # Spawn the markers
+        for i in range(3):
+            summon marker ~ ~ ~ {Tags:["enigma_rune_text_spawner"]}
+        
+        # Spread the markers randomly
+        spreadplayers ~ ~ 0 6 false @e[type=marker, tag=enigma_rune_text_spawner]
+
+        # Set markers Y to the runes Y
+        execute as @e[type=marker, tag=enigma_rune_text_spawner] run data modify entity @s Pos[1] set from entity @n[type=item_display, tag=enigma_current_rune] Pos[1]
+
+        # Spawn the text at the marker
+        execute as @e[type=marker, tag=enigma_rune_text_spawner] at @s:
+
+            # Randomly pick what text variant to use
+            execute store result score @s enigma_text_variant run random value 1..5
+
+            # Text variant 1
+            if score @s enigma_text_variant matches 1 run summon text_display ~ ~ ~ {billboard:"vertical",interpolation_duration:rune_text_timer,teleport_duration:rune_text_timer,line_width:0,Tags:["enigma_not_spread","enigma_rune_text"],brightness:{sky:15,block:15},text:{"color":"dark_purple","font":"minecraft:alt","text":"Magician"},background:1908001}
+
+            # Text variant 2
+            if score @s enigma_text_variant matches 2 run summon text_display ~ ~ ~ {billboard:"vertical",interpolation_duration:rune_text_timer,teleport_duration:rune_text_timer,line_width:0,Tags:["enigma_not_spread","enigma_rune_text"],brightness:{sky:15,block:15},text:{color:"dark_purple",obfuscated:true,text:"HAK"},background:1908001}
+
+            # Text variant 3
+            if score @s enigma_text_variant matches 3 run summon text_display ~ ~ ~ {billboard:"vertical",interpolation_duration:rune_text_timer,teleport_duration:rune_text_timer,line_width:0,Tags:["enigma_not_spread","enigma_rune_text"],brightness:{sky:15,block:15},text:{color:"#BC2AD2",font:"minecraft:illageralt",text:"Alxroar"},background:1908001}
+
+            # Text variant 4
+            if score @s enigma_text_variant matches 4 run summon text_display ~ ~ ~ {billboard:"vertical",interpolation_duration:rune_text_timer,teleport_duration:rune_text_timer,line_width:0,Tags:["enigma_not_spread","enigma_rune_text"],brightness:{sky:15,block:15},text:{color:"#BC2AD2",font:"minecraft:alt",text:"Enig",extra:[{obfuscated:true,text:"m"},"a"]},background:1908001}
+
+            # Text variant 5
+            if score @s enigma_text_variant matches 5 run summon text_display ~ ~ ~ {billboard:"vertical",interpolation_duration:rune_text_timer,teleport_duration:rune_text_timer,line_width:0,Tags:["enigma_not_spread","enigma_rune_text"],brightness:{sky:15,block:15},text:{color:"dark_purple",obfuscated:true,text:"L"},background:1908001}
+
+        # Delete the markers
+        kill @e[type=marker, tag=enigma_rune_text_spawner]
+
+        execute as @e[type=text_display, tag=enigma_not_spread]:
+            # Add text to the timer scoreboard
+            scoreboard players set @s enigma_text_timer rune_text_timer
+
+            # Tp the text up
+            at @s run tp @s ~ ~10 ~
+            tag @s remove enigma_not_spread
+    
+        # Untag the current rune
+        tag @s remove enigma_current_rune
+
+
+function legendaries:enigma/roatate_self:
+    $rotate @s ~$(angle) ~
+
+
+function legendaries:enigma/rune_explode:
+
+    # Deal damage
+    execute as @e[type=!item, distance=..8, tag=!enigma_rune_owner] run damage @s rune_damage magic
+
+    # Particles
+    particle dragon_breath ~ ~1 ~ 2 1 2 0.4 5000 force
+
+    # Sounds
+    stopsound @a * ambient.basalt_deltas.mood
+    playsound minecraft:entity.dragon_fireball.explode master @a ~ ~ ~ 5 1
+    playsound minecraft:entity.allay.death master @a ~ ~ ~ 5 0
+    playsound minecraft:entity.allay.death master @a ~ ~ ~ 5 0
+    playsound minecraft:entity.vex.death master @a ~ ~ ~ 5 0
+    playsound minecraft:entity.vex.death master @a ~ ~ ~ 5 0
+
+    # Remove rune
+    kill @s

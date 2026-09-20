@@ -100,6 +100,26 @@ predicate legendaries:sneaking {
         } 
     } 
 }
+predicate legendaries:not_wearing_armor {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "armor.head": {
+                "items": "air"
+            },
+            "armor.chest": {
+                "items": "air"
+            },
+            "armor.legs": {
+                "items": "air"
+            },
+            "armor.feet": {
+                "items": "air"
+            }
+        }
+    }
+}
 
 # Genral item modifires
 item_modifier legendaries:clear_consumable {
@@ -130,9 +150,14 @@ function legendaries:load:
     function legendaries:storms_edge/setup
     function legendaries:terraprisma/setup
     function legendaries:recluse_shield/setup
+    function legendaries:enigma/setup
 
     # Set up scoreboards
     scoreboard objectives add settings dummy
+    scoreboard objectives add id dummy
+
+    # Adds id counter if not already there
+    scoreboard players add $id_counter id 0
 
     # For scaling cooldowns correctly
     scoreboard players set $ticksPerSecond settings 20
@@ -152,14 +177,19 @@ function legendaries:tick:
     function legendaries:storms_edge/tick
     function legendaries:terraprisma/tick
     function legendaries:recluse_shield/tick
+    function legendaries:enigma/tick
 
     # Give glowing to all players who have a legendary
-    execute as @a[predicate=legendaries:has_legendary_inventory] run effect give @s glowing 1 0 true
-    execute as @a[predicate=legendaries:has_legendary_armor] run effect give @s glowing 1 0 true
-    execute as @a[predicate=legendaries:has_legendary_offhand] run effect give @s glowing 1 0 true
+    # execute as @a[predicate=legendaries:has_legendary_inventory] run effect give @s glowing 1 0 true
+    # execute as @a[predicate=legendaries:has_legendary_armor] run effect give @s glowing 1 0 true
+    # execute as @a[predicate=legendaries:has_legendary_offhand] run effect give @s glowing 1 0 true
 
     # Handles displaying cooldowns
     execute as @a function legendaries:cooldown_display
+
+    # Handles the custom player id system
+    function legendaries:id_system
+    
 
 function legendaries:give_all:
     function legendaries:tidal_blade/give
@@ -171,6 +201,7 @@ function legendaries:give_all:
     function legendaries:storms_edge/give
     function legendaries:terraprisma/give
     function legendaries:recluse_shield/give
+    function legendaries:enigma/give
 
 
 function legendaries:cooldown_display:
@@ -198,6 +229,19 @@ function legendaries:cooldown_display:
 
         # Adds the text to the cooldown msg
         data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"dark_purple",text:"Ender Step: ",extra:[{score:{name:"@s",objective:"ender_cloak_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Enigma Text
+    if entity @s[tag=enigma_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s enigma_cooldown_seconds = @s enigma_cooldown
+        scoreboard players operation @s enigma_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"dark_purple",text:"Abyssal Rune: ",extra:[{score:{name:"@s",objective:"enigma_cooldown_seconds"}},"s "]}]
 
         # Add has cooldown tag
         tag @s add has_cooldown
@@ -256,3 +300,16 @@ function legendaries:cooldown_display_macro:
     $title @s actionbar $(cooldown)
 
 
+function legendaries:id_system:
+
+    # Adds all player not on the id scoreboard to it
+    execute as @a run scoreboard players add @s id 0
+
+    # Gives an id to all player without an id 
+    execute as @a[scores={id=0}]:
+
+        # Copy fake players id to current player
+        scoreboard players operation @s id = $id_counter id
+
+        # Increase fake players score by 1
+        scoreboard players add $id_counter id 1
