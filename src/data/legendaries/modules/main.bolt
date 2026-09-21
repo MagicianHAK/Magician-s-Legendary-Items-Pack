@@ -8,6 +8,7 @@ import legendaries:storms_edge as storms_edge
 import legendaries:terraprisma as terraprisma
 import legendaries:recluse_shield as recluse_shield
 import legendaries:enigma as enigma
+import legendaries:bloodthorn as bloodthorn
 
 # Genral predicates
 predicate legendaries:has_legendary_armor { 
@@ -151,6 +152,7 @@ function legendaries:load:
     function legendaries:terraprisma/setup
     function legendaries:recluse_shield/setup
     function legendaries:enigma/setup
+    function legendaries:bloodthorn/setup
 
     # Set up scoreboards
     scoreboard objectives add settings dummy
@@ -178,6 +180,7 @@ function legendaries:tick:
     function legendaries:terraprisma/tick
     function legendaries:recluse_shield/tick
     function legendaries:enigma/tick
+    function legendaries:bloodthorn/tick
 
     # Handles displaying cooldowns
     execute as @a function legendaries:cooldown_display

@@ -187,7 +187,7 @@ function legendaries:enigma/on_use:
     advancement revoke @s only legendaries:enigma_on_use
 
     # If player is not on cooldown
-    if score @s enigma_cooldown matches 0:
+    if predicate legendaries:has_enigma_in_mainhand if score @s enigma_cooldown matches 0:
 
         # Put player on cooldown
         tag @s add enigma_on_cooldown

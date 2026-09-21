@@ -145,7 +145,7 @@ function legendaries:frenzy/ability:
     advancement revoke @s only legendaries:use_frenzy_ability
 
     # Triggers Frenzys ability if its off cooldown
-    execute if score @s frenzy_cooldown matches 0 run return:
+    if predicate legendaries:has_frenzy_in_hotbar if score @s frenzy_cooldown matches 0 run return:
 
         # Puts the ability on cooldown, and remove consumable
         scoreboard players add @s frenzy_cooldown ability_cooldown

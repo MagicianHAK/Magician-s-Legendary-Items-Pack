@@ -189,7 +189,7 @@ function legendaries:terraprisma/on_right_click:
     advancement revoke @s only legendaries:terraprisma_right_click
 
     # If not on cooldown and not currently charged, charge ability
-    if entity @s[tag=!terraprisma_on_cooldown, tag=!terraprisma_ability_charged] run return:
+    if entity @s[tag=!terraprisma_on_cooldown, tag=!terraprisma_ability_charged, predicate=legendaries:has_terraprisma_in_mainhand] run return:
 
         # Give tag to trigger ability on next hit
         tag @s add terraprisma_ability_charged
