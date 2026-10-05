@@ -140,6 +140,61 @@ item_modifier legendaries:make_consumable {
     }
 }
 
+# Genral block tags
+block_tag legendaries:raycast_through {
+    "values": [
+        "#minecraft:trapdoors",
+        "#minecraft:rails",
+        "#minecraft:copper_golem_statues",
+        "#minecraft:beds",
+        "#minecraft:all_signs",
+        "#minecraft:wooden_shelves",
+        "#minecraft:flower_pots",
+        "#minecraft:lightning_rods",
+        "#minecraft:campfires",
+        "#minecraft:chains",
+        "#minecraft:corals",
+        "#minecraft:climbable",
+        "#minecraft:saplings",
+        "#minecraft:wool_carpets",
+        "#minecraft:candles",
+        "#minecraft:replaceable",
+        "#minecraft:flowers",
+        "#minecraft:crops",
+        "#minecraft:banners",
+        "#minecraft:pressure_plates",
+        "#minecraft:buttons",
+        "minecraft:cobweb",
+        "minecraft:tripwire",
+        "minecraft:moss_carpet",
+        "minecraft:pale_moss_carpet",
+        "minecraft:pale_hanging_moss",
+        "minecraft:firefly_bush",
+        "minecraft:bamboo_sapling",
+        "minecraft:sugar_cane",
+        "minecraft:small_dripleaf",
+        "minecraft:big_dripleaf",
+        "minecraft:frogspawn",
+        "minecraft:sweet_berry_bush",
+        "minecraft:lily_pad",
+        "minecraft:torch",
+        "minecraft:wall_torch",
+        "minecraft:soul_torch",
+        "minecraft:soul_wall_torch",
+        "minecraft:redstone_torch",
+        "minecraft:redstone_wall_torch",
+        "minecraft:copper_torch",
+        "minecraft:copper_wall_torch",
+        "minecraft:end_rod",
+        "minecraft:brewing_stand",
+        "minecraft:redstone_wire",
+        "minecraft:repeater",
+        "minecraft:comparator",
+        "minecraft:tripwire_hook",
+        "minecraft:daylight_detector"
+    ]
+}
+
 function legendaries:load:
     # Runs setup functions for all legendaries
     function legendaries:tidal_blade/setup
@@ -200,6 +255,7 @@ function legendaries:give_all:
     function legendaries:terraprisma/give
     function legendaries:recluse_shield/give
     function legendaries:enigma/give
+    function legendaries:bloodthorn/give
 
 
 function legendaries:cooldown_display:
@@ -279,6 +335,19 @@ function legendaries:cooldown_display:
 
         # Adds the text to the cooldown msg
         data modify storage legendaries:text cooldown append value ["",{color:"white",text:"|"},{color:"#CDF0E7",text:" Fractured Soul: ",extra:[{score:{name:"@s",objective:"terraprisma_cooldown_seconds"}},"s "]}]
+
+        # Add has cooldown tag
+        tag @s add has_cooldown
+    
+    # Bloodthorn Text
+    if entity @s[tag=bloodthorn_on_cooldown]:
+
+        # Convert the cooldown from tick to seconds
+        scoreboard players operation @s bloodthorn_cooldown_seconds = @s bloodthorn_cooldown
+        scoreboard players operation @s bloodthorn_cooldown_seconds /= $ticksPerSecond settings
+
+        # Adds the text to the cooldown msg
+        data modify storage legendaries:text cooldown append value ["",{color:"white",text:"| "},{color:"red",text:"Heart Rend: ",extra:[{score:{name:"@s",objective:"bloodthorn_cooldown_seconds"}},"s "]}]
 
         # Add has cooldown tag
         tag @s add has_cooldown

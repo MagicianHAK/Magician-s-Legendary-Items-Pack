@@ -1,0 +1,226 @@
+import math
+
+# Settings
+ability_cooldown_seconds = 30 # Seconds
+tp_range_blocks = 50 # Blocks
+hp_steal_amount = 6 # HP / Half Hearts
+hp_steal_duration_seconds = 10 # Seconds
+max_pull_duration_seconds = 3 # Seconds
+
+# Some variables converted to for use
+ability_cooldown = ability_cooldown_seconds * 20
+tp_range = tp_range_blocks * 10
+hp_steal_duration = hp_steal_duration_seconds * 20
+max_pull_duration = hp_steal_duration - (max_pull_duration_seconds * 20)
+
+# For displaying the proper cooldown in item description
+cooldown_text = f"{ability_cooldown_seconds} Seconds"
+if ability_cooldown_seconds > 60:
+    minutes = math.floor(ability_cooldown_seconds / 60)
+    seconds = ability_cooldown_seconds % 60
+    cooldown_text = f"{minutes} Minute"
+    if minutes > 1:
+        cooldown_text += "s"
+    if seconds != 0:
+        cooldown_text += f" {seconds} Second"
+        if seconds > 1:
+            cooldown_text += "s"
+
+predicate legendaries:has_bloodthorn_in_mainhand {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+        "slots": {
+            "weapon.mainhand": {
+                "predicates": {
+                    "minecraft:custom_data": {
+                        "bloodthorn": true
+                    }
+                }
+            }
+        }
+    }
+}
+advancement legendaries:bloodthorn_on_use {
+    "criteria": {
+        "use_item": {
+            "trigger": "minecraft:using_item",
+            "conditions": {
+                "item": {
+                    "predicates": {
+                        "minecraft:custom_data": {
+                            "bloodthorn": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "rewards": {
+        "function": "legendaries:bloodthorn/on_use"
+    }
+}
+
+function legendaries:bloodthorn/give:
+    # Gives @s Bloodthorn
+
+    give @s netherite_sword[unbreakable={},enchantment_glint_override=false,enchantments={"fire_aspect":2,"looting":3,"sharpness":5},item_model="legendary_items:bloodthorn",custom_data={legendary:1b, bloodthorn:1b},custom_name={"bold":true,"color":"red","italic":false,"text":"Bloodthorn"},lore=[[{italic:false,color:"white",text:""}],[{italic:false,color:"white",text:""},{color:"red",bold:true,text:"Heart Rend: "},{color:"dark_gray",text:f"(Cooldown: {cooldown_text})"}],[{italic:false,color:"white",text:""},{color:"#FF8E8E",text:"Sneak right click on a target pull them"}],[{italic:false,color:"white",text:""},{color:"#FF8E8E",text:"towards you and temporarily steal 3"}],[{italic:false,color:"white",text:""},{color:"#FF8E8E",text:"of there max hearts."}]]] 1
+
+
+function legendaries:bloodthorn/setup:
+    # Runs all setup for Bloodthorn
+
+    # Sets up all Bloodthorn scoreboards
+    scoreboard objectives add bloodthorn_cooldown dummy
+    scoreboard objectives add bloodthorn_cooldown_seconds dummy
+    scoreboard objectives add bloodthorn_raycast dummy
+    scoreboard objectives add bloodthorn_pull_id dummy
+    scoreboard objectives add bloodthorn_pull_timer dummy
+
+    # Fake player for storing how far the raycast has gone
+    scoreboard players add $raycast_distance bloodthorn_raycast 0
+
+function legendaries:bloodthorn/tick:
+    # Runs all Bloodthorn related functions and effects that need to run every tick
+
+    # Adds all player to the cooldown scoreboard
+    execute as @a[predicate=legendaries:has_bloodthorn_in_mainhand] run scoreboard players add @s bloodthorn_cooldown 0
+
+    # Cooldown logic
+    execute as @a[tag=bloodthorn_on_cooldown]:
+
+        # Reduce cooldown by 1 tick
+        scoreboard players remove @s bloodthorn_cooldown 1
+
+        # If the cooldown is over
+        if score @s bloodthorn_cooldown matches 0:
+
+            # Remove tag
+            tag @s remove bloodthorn_on_cooldown
+
+            # Tell player
+            tellraw @s ["",{color:"red",bold:true,text:"Heart Rend "},{color:"#FF8E8E",text:"is ready!"}]
+
+    # If the player holding Bloodthorn is sneaking and not on cooldown make it consumable
+    execute as @a[predicate=legendaries:has_bloodthorn_in_mainhand, predicate=legendaries:sneaking, tag=!bloodthorn_on_cooldown] run item modify entity @s weapon.mainhand legendaries:make_consumable
+
+    # If the player holding Bloodthorn is not sneaking remove consumable
+    execute as @a[predicate=legendaries:has_bloodthorn_in_mainhand, predicate=legendaries:not_sneaking] run item modify entity @s weapon.mainhand legendaries:clear_consumable
+
+    # Pull timer logic
+    execute as @e[tag=bloodthorn_hp_reduced] at @s:
+
+        # Reduce the timer by 1 tick
+        scoreboard players remove @s bloodthorn_pull_timer 1
+
+        # If entity has been pulled for to long stop pulling
+        if score @s bloodthorn_pull_timer matches max_pull_duration run function legendaries:bloodthorn/stop_pull
+
+        # If timer ran out
+        if score @s bloodthorn_pull_timer matches 0:
+
+            # Remove tag
+            tag @s remove bloodthorn_hp_reduced
+
+            # Give max hp back
+            attribute @s max_health modifier remove legendaries:bloodthorn_hp_down
+
+            # Remove max hp boost from pulling player
+            function legendaries:bloodthorn/tag_pulling_player
+            execute as @a[tag=bloodthorn_pulling]:
+                attribute @s minecraft:max_health modifier remove legendaries:bloodthorn_hp_up
+                tag @s remove bloodthorn_pulling
+
+
+    # Run as all entities being pulled
+    execute as @e[tag=bloodthorn_being_pulled] at @s:
+
+        function legendaries:bloodthorn/tag_pulling_player
+
+        # Face player pulling
+        rotate @s facing entity @p[tag=bloodthorn_pulling]
+
+        # Tp forward
+        tp @s ^ ^ ^1
+
+        # If pulled entity has reached player stop pulling
+        if score @s bloodthorn_pull_id = @p[tag=bloodthorn_pulling, distance=..2] id run function legendaries:bloodthorn/stop_pull
+
+        # Remove tag
+        execute as @a[tag=bloodthorn_pulling] run tag @s remove bloodthorn_pulling
+
+
+function legendaries:bloodthorn/on_use:
+
+    # Remove trigger advancement
+    advancement revoke @s only legendaries:bloodthorn_on_use
+
+    if score @s bloodthorn_cooldown matches 0:
+
+        # Put player on cooldown
+        tag @s add bloodthorn_on_cooldown
+        scoreboard players set @s bloodthorn_cooldown ability_cooldown
+
+        # Tag player to not get hit by raycast
+        tag @s add bloodthorn_raycaster
+
+        # Set max distance for raycast
+        scoreboard players set $raycast_distance bloodthorn_raycast tp_range
+
+        # Start the raycast
+        execute anchored eyes positioned ^ ^ ^.1 run function legendaries:bloodthorn/raycast
+
+        # Remove tag
+        tag @s remove bloodthorn_raycaster
+
+
+function legendaries:bloodthorn/raycast:
+
+    # Remove 1 from distance left to travel
+    scoreboard players remove $raycast_distance bloodthorn_raycast 1
+
+    # Checks if the raycast hit a entity
+    execute positioned ~-.5 ~-.5 ~-.5 as @n[dx=0, tag=!bloodthorn_raycaster, type=!item] run return:
+        
+        # Give hit entity the id of the player to pull them
+        scoreboard players operation @s bloodthorn_pull_id = @p[tag=bloodthorn_raycaster] id
+        tag @s add bloodthorn_being_pulled
+        tag @s add bloodthorn_hp_reduced
+
+        # Start the pull timer
+        scoreboard players set @s bloodthorn_pull_timer hp_steal_duration
+
+        # Give max hp to pulling player
+        as @a[tag=bloodthorn_raycaster] run attribute @s max_health modifier add legendaries:bloodthorn_hp_up hp_steal_amount add_value
+
+        # Remove max hp from hit entity
+        attribute @s max_health modifier add legendaries:bloodthorn_hp_down f"-{hp_steal_amount}" add_value
+    
+    # Runs the next step of the raycast if it has not hit its limit and has not hit a block
+    execute if block ~ ~ ~ #legendaries:raycast_through if score $raycast_distance bloodthorn_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:bloodthorn/raycast
+
+
+function legendaries:bloodthorn/stop_pull:
+
+    # Remove Tag
+    tag @s remove bloodthorn_being_pulled
+
+    # Tp out of floor
+    tp @s ~ ~1 ~
+
+
+function legendaries:bloodthorn/tag_pulling_player:
+
+    # Store current pull id to fake player
+    scoreboard players operation $bloodthorn_curret_player bloodthorn_pull_id = @s bloodthorn_pull_id
+
+    # Tag player pulling
+    execute as @a if score @s id = $bloodthorn_curret_player bloodthorn_pull_id run tag @s add bloodthorn_pulling
+
+
+
+
+
+
+
+    

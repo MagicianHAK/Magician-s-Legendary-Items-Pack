@@ -117,59 +117,7 @@ predicate legendaries:has_ender_conduit_in_offhand {
         } 
     } 
 }
-block_tag legendaries:ender_cloak_tp_through {
-    "values": [
-        "#minecraft:trapdoors",
-        "#minecraft:rails",
-        "#minecraft:copper_golem_statues",
-        "#minecraft:beds",
-        "#minecraft:all_signs",
-        "#minecraft:wooden_shelves",
-        "#minecraft:flower_pots",
-        "#minecraft:lightning_rods",
-        "#minecraft:campfires",
-        "#minecraft:chains",
-        "#minecraft:corals",
-        "#minecraft:climbable",
-        "#minecraft:saplings",
-        "#minecraft:wool_carpets",
-        "#minecraft:candles",
-        "#minecraft:replaceable",
-        "#minecraft:flowers",
-        "#minecraft:crops",
-        "#minecraft:banners",
-        "#minecraft:pressure_plates",
-        "#minecraft:buttons",
-        "minecraft:cobweb",
-        "minecraft:tripwire",
-        "minecraft:moss_carpet",
-        "minecraft:pale_moss_carpet",
-        "minecraft:pale_hanging_moss",
-        "minecraft:firefly_bush",
-        "minecraft:bamboo_sapling",
-        "minecraft:sugar_cane",
-        "minecraft:small_dripleaf",
-        "minecraft:big_dripleaf",
-        "minecraft:frogspawn",
-        "minecraft:sweet_berry_bush",
-        "minecraft:lily_pad",
-        "minecraft:torch",
-        "minecraft:wall_torch",
-        "minecraft:soul_torch",
-        "minecraft:soul_wall_torch",
-        "minecraft:redstone_torch",
-        "minecraft:redstone_wall_torch",
-        "minecraft:copper_torch",
-        "minecraft:copper_wall_torch",
-        "minecraft:end_rod",
-        "minecraft:brewing_stand",
-        "minecraft:redstone_wire",
-        "minecraft:repeater",
-        "minecraft:comparator",
-        "minecraft:tripwire_hook",
-        "minecraft:daylight_detector"
-    ]
-}
+
 
 function legendaries:ender_cloak/give:
     # Gives @s Ender Cloak
@@ -276,7 +224,7 @@ function legendaries:ender_cloak/raycast:
             particle minecraft:dragon_breath ~ ~1 ~ 0.7 0.7 0.7 .05 150
 
     # Runs the next step of the raycast if it has not hit its limit and has not hit a block
-    execute if block ~ ~ ~ #legendaries:ender_cloak_tp_through if score $enderCloakMaxRaycast ender_cloak_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
+    execute if block ~ ~ ~ #legendaries:raycast_through if score $enderCloakMaxRaycast ender_cloak_raycast matches 1.. positioned ^ ^ ^.1 run function legendaries:ender_cloak/raycast
 
 
 function legendaries:ender_cloak/clear_damage_boost:
